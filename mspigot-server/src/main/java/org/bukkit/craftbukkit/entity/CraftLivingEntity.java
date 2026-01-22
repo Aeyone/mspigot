@@ -6,6 +6,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
+import net.hylist.profile.KnockbackProfile;
+import net.hylist.profile.PotionProfile;
 import net.minecraft.server.DamageSource;
 import net.minecraft.server.EntityArrow;
 import net.minecraft.server.EntityEgg;
@@ -63,6 +65,28 @@ import org.bukkit.util.Vector;
 
 public class CraftLivingEntity extends CraftEntity implements LivingEntity {
     private CraftEntityEquipment equipment;
+
+    // Aeyone begin
+    @Override
+    public KnockbackProfile getKbProfile() {
+        return getHandle().getKnockback();
+    }
+
+    @Override
+    public void setKbProfile(KnockbackProfile profile) {
+        getHandle().setKbProfile(profile);
+    }
+
+    @Override
+    public PotionProfile getPotProfile() {
+        return getHandle().getPotion();
+    }
+
+    @Override
+    public void setPotProfile(PotionProfile profile) {
+        getHandle().setPotProfile(profile);
+    }
+    // Aeyone end
 
     public CraftLivingEntity(final CraftServer server, final EntityLiving entity) {
         super(server, entity);

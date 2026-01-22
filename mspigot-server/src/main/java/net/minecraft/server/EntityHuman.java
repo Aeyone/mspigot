@@ -23,6 +23,8 @@ import org.bukkit.event.player.*;
 import org.spigotmc.ProtocolData; // Spigot - protocol patch
 import org.spigotmc.SpigotConfig;
 
+import net.hylist.profile.KnockbackProfile;
+
 public abstract class EntityHuman extends EntityLiving implements ICommandListener {
 
     public PlayerInventory inventory = new PlayerInventory(this);
@@ -960,24 +962,27 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
 
                     boolean flag2 = entity.damageEntity(DamageSource.playerAttack(this), f);
 
+                    KnockbackProfile profile = getKnockback();
+
                     if (flag2) {
                         if (SpigotConfig.knockbackMode == SpigotConfig.MMC) {
                             if (this.isApplyingSprintKnockback()) {
-                                entity.g(-MathHelper.sin(this.yaw * 3.1415927f / 180.0f) * i * 0.5f, 0.1, MathHelper.cos(this.yaw * 3.1415927f / 180.0f) * i * 0.5f);
+                                entity.g(
+                                        -MathHelper.sin(this.yaw * 3.1415927f / 180.0f) * i * 0.5f,
+                                        0.1,
+                                        MathHelper.cos(this.yaw * 3.1415927f / 180.0f) * i * 0.5f
+                                );
                                 this.setApplyingSprintKnockback(false);
                             }
                         } else {
                             if (i > 0) {
-                                if (SpigotConfig.knockbackMode == SpigotConfig.KOHI) {
-                                    entity.g((double) (-MathHelper.sin(this.yaw * 3.1415927F / 180.0F) * (float) i * 0.5F), 0.1D, (double) (MathHelper.cos(this.yaw * 3.1415927F / 180.0F) * (float) i * 0.5F));
-                                } else {
-                                    entity.g(
-                                            (double) (-MathHelper.sin(this.yaw * 3.1415927F / 180.0F) * (float) i * SpigotConfig.knockbackExtraHorizontal),
-                                            SpigotConfig.knockbackExtraVertical,
-                                            (double) (MathHelper.cos(this.yaw * 3.1415927F / 180.0F) * (float) i * SpigotConfig.knockbackExtraHorizontal));
-                                }
-                                this.motX *= 0.6D;
-                                this.motZ *= 0.6D;
+                                entity.g(
+                                        (double) (-MathHelper.sin(this.yaw * 3.1415927F / 180.0F) * (float) i * profile.getExtraHorizontal()),
+                                        profile.getExtraVertical(),
+                                        (double) (MathHelper.cos(this.yaw * 3.1415927F / 180.0F) * (float) i * profile.getExtraHorizontal())
+                                );
+                                this.motX *= profile.getRecoilMultiplier();
+                                this.motZ *= profile.getRecoilMultiplier();
                                 this.setSprinting(false);
                             }
                         }

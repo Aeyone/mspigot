@@ -3,7 +3,6 @@ package net.minecraft.server;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
@@ -12,21 +11,17 @@ import java.util.UUID;
 import java.util.concurrent.Callable;
 
 // PaperSpigot start
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.HashMap;
 import java.util.Map;
 
 import net.frozenorb.generator.GeneratorConfig;
-import net.minecraft.util.com.google.common.util.concurrent.ThreadFactoryBuilder;
-import org.bukkit.craftbukkit.CraftChunk;
+import net.hylist.profile.PotionProfile;
 // PaperSpigot end
 
 // CraftBukkit start
 import org.bukkit.Bukkit;
 import org.bukkit.block.BlockState;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
-import org.bukkit.craftbukkit.util.LongHashSet;
 import org.bukkit.craftbukkit.SpigotTimings; // Spigot
 import org.bukkit.generator.ChunkGenerator;
 
@@ -49,6 +44,9 @@ import net.frozenorb.WeakChunkCache;
 import net.frozenorb.ThreadingManager;
 import net.frozenorb.ThreadingManager.TaskQueueWorker;
 import net.frozenorb.autosave.AutoSaveWorldData;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
+import org.bukkit.util.Vector;
 // Poweruser end
 
 public abstract class World implements IBlockAccess {
@@ -1231,8 +1229,34 @@ public abstract class World implements IBlockAccess {
         } else if (entity instanceof EntityItem) {
             event = CraftEventFactory.callItemSpawnEvent((EntityItem) entity);
         } else if (entity.getBukkitEntity() instanceof org.bukkit.entity.Projectile) {
-            // Not all projectiles extend EntityProjectile, so check for Bukkit interface instead
-            event = CraftEventFactory.callProjectileLaunchEvent(entity);
+            // Only cast to EntityProjectile if it is actually an instance of EntityProjectile
+            if (entity instanceof EntityProjectile) {
+                EntityProjectile entityProjectile = (EntityProjectile) entity;
+
+                // Not all projectiles extend EntityProjectile, so check for Bukkit interface instead
+                if (entityProjectile instanceof EntityPotion && entityProjectile.shooter instanceof EntityPlayer) {
+                    EntityPlayer ep = (EntityPlayer) entityProjectile.shooter;
+                    int level = 10;
+                    for (PotionEffect effect : ep.getBukkitEntity().getActivePotionEffects()) {
+                        if (effect.getType().getName().equals("SPEED")) {
+                            level += effect.getAmplifier() + 1;
+                        }
+                    }
+                    PotionProfile profile = ep.getPotion();
+                    if (ep.isSprinting()) {
+                        Vector velocity = entityProjectile.getBukkitEntity().getVelocity();
+
+                        velocity.setX(velocity.getX() * profile.getPotionExtraHorizontal() * (profile.isFollowSpeedLevel() ? 0.1D * level : 1));
+                        velocity.setY(velocity.getY() + profile.getPotionExtraVertical());
+                        velocity.setZ(velocity.getZ() * profile.getPotionExtraHorizontal() * (profile.isFollowSpeedLevel() ? 0.1D * level : 1));
+                        entityProjectile.getBukkitEntity().setVelocity(velocity);
+                    }
+                }
+
+                event = CraftEventFactory.callProjectileLaunchEvent(entity);
+            } else {
+                event = CraftEventFactory.callProjectileLaunchEvent(entity);
+            }
         }
         // Spigot start
         else if (entity instanceof EntityExperienceOrb) {

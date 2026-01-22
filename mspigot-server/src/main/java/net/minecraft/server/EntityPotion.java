@@ -10,6 +10,7 @@ import org.bukkit.craftbukkit.entity.CraftLivingEntity;
 import org.bukkit.entity.LivingEntity;
 // CraftBukkit end
 
+
 public class EntityPotion extends EntityProjectile {
 
     public ItemStack item; // CraftBukkit private -> public
@@ -33,17 +34,25 @@ public class EntityPotion extends EntityProjectile {
     }
 
     protected float i() {
-        return 0.05F;
+        if (shooter == null || !(shooter instanceof EntityPlayer))
+            return 0.05F;
+
+        return ((EntityPlayer) shooter).getPotion().getPotionFall();
     }
 
     protected float e() {
-        return 0.5F;
+        if (shooter == null || !(shooter instanceof EntityPlayer))
+            return 0.5F;
+
+        return ((EntityPlayer) shooter).getPotion().getPotionMultiplier();
     }
 
     protected float f() {
-        return -20.0F;
-    }
+        if (shooter == null || !(shooter instanceof EntityPlayer))
+            return -20.0F;
 
+        return ((EntityPlayer) shooter).getPotion().getPotionOffset();
+    }
     public void setPotionValue(int i) {
         if (this.item == null) {
             this.item = new ItemStack(Items.POTION, 1, 0);
@@ -65,7 +74,7 @@ public class EntityPotion extends EntityProjectile {
             List list = Items.POTION.g(this.item);
 
             if (true || list != null && !list.isEmpty()) { // CraftBukkit - Call event even if no effects to apply
-                AxisAlignedBB axisalignedbb = this.boundingBox.grow(4.0D, 2.0D, 4.0D);
+                AxisAlignedBB axisalignedbb = this.boundingBox.grow(4.0D, 2.0D, 4.0D);// Aeyone: tode potion box
                 List list1 = this.world.a(EntityLiving.class, axisalignedbb);
 
                 if (list1 != null) { // CraftBukkit - Run code even if there are no entities around

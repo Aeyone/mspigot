@@ -17,6 +17,9 @@ import org.bukkit.event.player.PlayerAttackEvent;
 import org.spigotmc.ActivationRange;
 import org.spigotmc.SpigotConfig;
 
+import net.hylist.profile.KnockbackProfile;
+import net.hylist.profile.PotionProfile;
+
 import com.google.common.base.Function;
 
 import java.util.*;
@@ -25,6 +28,24 @@ import java.util.*;
 // CraftBukkit endß
 
 public abstract class EntityLiving extends Entity {
+    private KnockbackProfile knockback;
+    private PotionProfile potion;
+
+    public KnockbackProfile getKnockback() {
+        return knockback == null ? SpigotConfig.knockbackManager.getGlobalProfile() : knockback;
+    }
+
+    public void setKbProfile(KnockbackProfile profile) {
+        this.knockback = profile;
+    }
+
+    public PotionProfile getPotion() {
+        return potion == null ? SpigotConfig.potionManager.getGlobalProfile() : potion;
+    }
+
+    public void setPotProfile(PotionProfile profile) {
+        this.potion = profile;
+    }
 
     private static final UUID b = UUID.fromString("662A6B8D-DA3E-4C1C-8813-96EA6097278D");
     public static final AttributeModifier c = (new AttributeModifier(b, "Sprinting speed boost", 0.30000001192092896D, 2)).a(false); // Guardian: private -> public
@@ -90,6 +111,7 @@ public abstract class EntityLiving extends Entity {
     public int maxAirTicks = 300;
     private boolean applyingSprintKnockback;
     ArrayList<org.bukkit.inventory.ItemStack> drops = null;
+
     // CraftBukkit end
     // Spigot start
     public void inactiveTick()
@@ -893,19 +915,22 @@ public abstract class EntityLiving extends Entity {
         if (this.random.nextDouble() >= this.getAttributeInstance(GenericAttributes.c).getValue()) {
             this.al = true;
             float f1 = MathHelper.sqrt(d0 * d0 + d1 * d1);
+
+            KnockbackProfile profile = getKnockback();
+
             if (SpigotConfig.knockbackMode == SpigotConfig.KOHI) {
                 double magnitude = f1;
 
-                this.motX /= SpigotConfig.knockbackFriction;
-                this.motY /= SpigotConfig.knockbackFriction;
-                this.motZ /= SpigotConfig.knockbackFriction;
+                this.motX /= profile.getFriction();
+                this.motY /= profile.getFriction();
+                this.motZ /= profile.getFriction();
 
-                this.motX -= d0 / magnitude * SpigotConfig.knockbackHorizontal;
-                this.motY += SpigotConfig.knockbackVertical;
-                this.motZ -= d1 / magnitude * SpigotConfig.knockbackHorizontal;
+                this.motX -= d0 / magnitude * profile.getHorizontal();
+                this.motY += profile.getVertical();
+                this.motZ -= d1 / magnitude * profile.getHorizontal();
 
-                if (this.motY > SpigotConfig.knockbackVerticalLimit) {
-                    this.motY = SpigotConfig.knockbackVerticalLimit;
+                if (this.motY > profile.getVerticalLimit()) {
+                    this.motY = profile.getVerticalLimit();
                 }
             } else if (SpigotConfig.knockbackMode == SpigotConfig.MMC) {
                 if (this.random.nextDouble() >= this.getAttributeInstance(GenericAttributes.c).getValue()) {
@@ -913,8 +938,8 @@ public abstract class EntityLiving extends Entity {
                     final float f2 = MathHelper.sqrt(d0 * d0 + d1 * d1);
                     float f3 = 0.4f;
                     float f4 = 0.4f;
-                    final double knockbackReductionHorizontal = 1.0 - SpigotConfig.knockbackHorizontal;
-                    final double knockbackReductionVertical = 1.0 - SpigotConfig.knockbackVertical;
+                    final double knockbackReductionHorizontal = 1.0 - profile.getHorizontal();
+                    final double knockbackReductionVertical = 1.0 - profile.getVertical();
                     final double frictionHorizontal = 2.0 - knockbackReductionHorizontal;
                     final double frictionVertical = 2.0 - knockbackReductionVertical - 0.25;
                     f3 *= (float)(1.0 - knockbackReductionHorizontal);

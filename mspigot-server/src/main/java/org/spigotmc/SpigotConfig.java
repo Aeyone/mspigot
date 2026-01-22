@@ -7,22 +7,25 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
+
+import net.hylist.command.PotionCommand;
+import net.hylist.command.KnockbackCommand;
+import net.hylist.profile.*;
+
 import net.minecraft.server.AttributeRanged;
 import net.minecraft.server.GenericAttributes;
 import net.minecraft.util.gnu.trove.map.hash.TObjectIntHashMap;
 import net.minecraft.server.MinecraftServer;
+
+import net.md_5.bungee.api.ChatColor;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configuration;
+
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -30,6 +33,23 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 public class SpigotConfig
 {
+    // Aeyone start
+    public static ProfileManager<KnockbackProfile> knockbackManager;
+    public static ProfileManager<PotionProfile> potionManager;
+
+    private static void initProfile() {
+        knockbackManager = new ProfileManager<KnockbackProfile>(
+            new File("config/server", "knockback.json"),
+            new KnockbackProfileFactory()
+        );
+        potionManager = new ProfileManager<PotionProfile>(
+            new File("config/server", "potion.json"),
+            new PotionProfileFactory()
+        );
+        commands.put("minehqKnockback", new KnockbackCommand());
+        commands.put("minehqPotion", new PotionCommand());
+    }
+    // Aeyone end
 
     private static final File CONFIG_FILE = new File( "config/server", "spigot.yml" ); // MineHQ - Dedicated config directory
     private static final String HEADER = "This is the main configuration file for Spigot.\n"
@@ -72,6 +92,9 @@ public class SpigotConfig
         version = getInt( "config-version", 8 );
         set( "config-version", 8 );
         readConfig( SpigotConfig.class, null );
+
+        // Aeyone -- init profiles
+        initProfile();
     }
 
     public static void registerCommands()
@@ -545,19 +568,19 @@ public class SpigotConfig
         reduceArmorDamage = getBoolean("settings.reduce-armor-damage", false);
     }
 
-    // Kohi = 0, MineHQ = 1, MMC = 2
+//     Kohi = 0, MineHQ = 1, MMC = 2
 
     public static int KOHI = 0;
     public static int MINEHQ = 1;
     public static int MMC = 2;
 
     public static int knockbackMode = 0;
-    public static double knockbackFriction = 2.0D;
-    public static double knockbackHorizontal = 0.35D;
-    public static double knockbackVertical = 0.35D;
-    public static double knockbackVerticalLimit = 0.4D;
-    public static double knockbackExtraHorizontal = 0.425D;
-    public static double knockbackExtraVertical = 0.085D;
+//    public static double knockbackFriction = 2.0D;
+//    public static double knockbackHorizontal = 0.35D;
+//    public static double knockbackVertical = 0.35D;
+//    public static double knockbackVerticalLimit = 0.4D;
+//    public static double knockbackExtraHorizontal = 0.425D;
+//    public static double knockbackExtraVertical = 0.085D;
     private static void knockback() {
         knockbackMode = getInt("settings.knockback-mode", 0);
     }

@@ -1,0 +1,16 @@
+{
+    "global-profile": "Default",
+    "profiles":
+    {
+        "Default":
+        {
+            "friction": "2.0",
+            "horizontal": "0.35",
+            "vertical": "0.35",
+            "verticalLimit": "0.4",
+            "extraHorizontal": "0.425",
+            "extraVertical": "0.085",
+            "recoilMultiplier": "0.6"
+        }
+    }
+}

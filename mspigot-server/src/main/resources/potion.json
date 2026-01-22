@@ -1,0 +1,24 @@
+{
+    "global-profile": "Default",
+    "profiles":
+    {
+        "Default":
+        {
+            "potionFall": "0.05",
+            "potionMultiplier": "0.5",
+            "potionOffset": "-20.0",
+            "followSpeedLevel": "true",
+            "potionExtraHorizontal": "1.0",
+            "potionExtraVertical": "0.0"
+        },
+        "FastPotion":
+        {
+            "potionFall": "0.05",
+            "potionMultiplier": "0.45",
+            "potionOffset": "-30.0",
+            "followSpeedLevel": "false",
+            "potionExtraHorizontal": "1.0",
+            "potionExtraVertical": "-0.085"
+        }
+    }
+}

@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 
+import net.hylist.profile.KnockbackProfile;
+import net.hylist.profile.PotionProfile;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.EntityEquipment;
@@ -84,6 +86,21 @@ public interface LivingEntity extends Entity, Damageable, ProjectileSource {
      */
     @Deprecated
     public List<Block> getLastTwoTargetBlocks(HashSet<Byte> transparent, int maxDistance);
+
+    /**
+     * Gets the knockback profile of this player.
+     */
+    public KnockbackProfile getKbProfile();
+
+    /**
+     * Sets the knockback profile of this player. The player's knockback
+     * profile overrides the global knockback profile.
+     */
+    public void setKbProfile(KnockbackProfile profile);
+
+    PotionProfile getPotProfile();
+
+    void setPotProfile(PotionProfile profile);
 
     /**
      * Throws an egg from the living entity.

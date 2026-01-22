@@ -135,6 +135,11 @@ public abstract class EntityProjectile extends Entity implements IProjectile {
                     AxisAlignedBB axisalignedbb = entity1.boundingBox.grow((double) f, (double) f, (double) f);
                     MovingObjectPosition movingobjectposition1 = axisalignedbb.a(vec3d, vec3d1);
 
+                    // Smooth Potting
+                    if (this instanceof EntityPotion && movingobjectposition1 == null && this.boundingBox.b(entity1.boundingBox)) {
+                        movingobjectposition1 = new MovingObjectPosition(entity1);
+                    }
+
                     if (movingobjectposition1 != null) {
                         double d1 = vec3d.distanceSquared(movingobjectposition1.pos); // CraftBukkit - distance efficiency
 
