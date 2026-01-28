@@ -18,9 +18,10 @@ import java.util.List;
 import java.util.Map;
 
 public class ProfileManager<T extends Profile>{
-    private final JsonConfig config;
     private final ProfileFactory<T> factory;
     private final List<T> profiles = new ArrayList<>();
+    private final File file;
+    private JsonConfig config;
     private T globalProfile;
 
     public T getGlobalProfile() {
@@ -45,12 +46,13 @@ public class ProfileManager<T extends Profile>{
     }
 
     public ProfileManager(File file, ProfileFactory<T> factory){
-        this.config = new JsonConfig(file).load();
+        this.file = file;
         this.factory = factory;
         this.loadProfile();
     }
 
     public void loadProfile() {
+        this.config = new JsonConfig(file).load();
         profiles.clear();
         Map<String, Object> profilesMap = (Map<String, Object>) config.get("profiles");
 
