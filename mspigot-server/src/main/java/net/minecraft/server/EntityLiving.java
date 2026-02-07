@@ -1,6 +1,7 @@
 package net.minecraft.server;
 
 import com.google.common.collect.Sets;
+import net.jafama.FastMath;
 import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.SpigotTimings;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
@@ -914,7 +915,7 @@ public abstract class EntityLiving extends Entity {
     public void a(DamageSource damageSource, float f, double d0, double d1) {
         if (this.random.nextDouble() >= this.getAttributeInstance(GenericAttributes.c).getValue()) {
             this.al = true;
-            float f1 = MathHelper.sqrt(d0 * d0 + d1 * d1);
+            Double f1 = FastMath.sqrt(d0 * d0 + d1 * d1);
 
             KnockbackProfile profile = getKnockback();
 
