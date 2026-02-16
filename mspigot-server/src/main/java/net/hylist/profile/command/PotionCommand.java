@@ -1,28 +1,28 @@
-package net.hylist.command;
+package net.hylist.profile.command;
 
 import java.util.Arrays;
-import net.hylist.profile.CraftKnockbackProfile;
-import net.hylist.profile.KnockbackProfile;
+import net.hylist.profile.craft.CraftPotionProfile;
+import net.hylist.profile.PotionProfile;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.spigotmc.SpigotConfig;
 
-public class KnockbackCommand extends Command {
+public class PotionCommand extends Command {
 
-    public KnockbackCommand() {
-        super("minehqKnockback");
+    public PotionCommand() {
+        super("minehqPotion");
 
-        this.setAliases(Arrays.asList("knockback", "kb"));
+        this.setAliases(Arrays.asList("potion"));
         this.setUsage(StringUtils.join(new String[]{
                 ChatColor.BLUE + ChatColor.STRIKETHROUGH.toString() + StringUtils.repeat("-", 35),
-		        ChatColor.RED + "/kb list",
-                ChatColor.RED + "/kb create <name>",
-                ChatColor.RED + "/kb delete <name>",
-                ChatColor.RED + "/kb update <name> <f> <h> <v> <vl> <eh> <ev> <rm>",
-                ChatColor.RED + "/kb setglobal <name>",
-                ChatColor.RED + "/kb reload",
+		        ChatColor.RED + "/potion list",
+                ChatColor.RED + "/potion create <name>",
+                ChatColor.RED + "/potion delete <name>",
+                ChatColor.RED + "/potion update <name> <......>",
+                ChatColor.RED + "/potion setglobal <name>",
+                ChatColor.RED + "/potion reload",
                 ChatColor.BLUE + ChatColor.STRIKETHROUGH.toString() + StringUtils.repeat("-", 35)
         }, "\n"));
     }
@@ -41,28 +41,28 @@ public class KnockbackCommand extends Command {
 
         switch (args[0].toLowerCase()) {
             case "list": {
-                SpigotConfig.knockbackManager.sendInfo(sender);
+                SpigotConfig.potionManager.sendInfo(sender);
             }
             break;
             case "create": {
                 if (args.length > 1) {
                     String name = args[1];
 
-                    for (KnockbackProfile profile : SpigotConfig.knockbackManager.getProfiles()) {
+                    for (PotionProfile profile : SpigotConfig.potionManager.getProfiles()) {
                         if (profile.getName().equalsIgnoreCase(name)) {
                             sender.sendMessage(ChatColor.RED + "A profile with that name already exists.");
                             return true;
                         }
                     }
 
-                    CraftKnockbackProfile profile = new CraftKnockbackProfile(name);
+                    CraftPotionProfile profile = new CraftPotionProfile(name);
 
-                    SpigotConfig.knockbackManager.getProfiles().add(profile);
-                    SpigotConfig.knockbackManager.saveProfiles();
+                    SpigotConfig.potionManager.getProfiles().add(profile);
+                    SpigotConfig.potionManager.saveProfiles();
 
                     sender.sendMessage(ChatColor.GOLD + "New profile created.");
                 } else {
-                    sender.sendMessage(ChatColor.RED + "Usage: /kb create <name>");
+                    sender.sendMessage(ChatColor.RED + "Usage: /potion create <name>");
                 }
             }
             break;
@@ -70,12 +70,12 @@ public class KnockbackCommand extends Command {
                 if (args.length > 1) {
                     final String name = args[1];
 
-                    if (SpigotConfig.knockbackManager.getGlobalProfile().getName().equalsIgnoreCase(name)) {
-                        sender.sendMessage(ChatColor.RED + "You can't delete the active global knockback profile.");
+                    if (SpigotConfig.potionManager.getGlobalProfile().getName().equalsIgnoreCase(name)) {
+                        sender.sendMessage(ChatColor.RED + "You can't delete the active global potion profile.");
                         return true;
                     } else {
-                        if (SpigotConfig.knockbackManager.getProfiles().removeIf(profile -> profile.getName().equalsIgnoreCase(name))) {
-                            SpigotConfig.knockbackManager.saveProfiles();
+                        if (SpigotConfig.potionManager.getProfiles().removeIf(profile -> profile.getName().equalsIgnoreCase(name))) {
+                            SpigotConfig.potionManager.saveProfiles();
                             sender.sendMessage(ChatColor.RED + "Deleted profile.");
                         } else {
                             sender.sendMessage(ChatColor.RED + "A profile with that name couldn't be found.");
@@ -84,29 +84,18 @@ public class KnockbackCommand extends Command {
                         return true;
                     }
                 } else {
-                    sender.sendMessage(ChatColor.RED + "Usage: /kb delete <name>");
+                    sender.sendMessage(ChatColor.RED + "Usage: /potion delete <name>");
                 }
             }
             break;
             case "update": {
-                if (args.length == 9) {
-                    KnockbackProfile profile = SpigotConfig.knockbackManager.getProfileByName(args[1]);
-
-                    if (profile == null) {
-                        sender.sendMessage(ChatColor.RED + "A profile with that name couldn't be found.");
-                        return true;
-                    }
-
-                    profile.setFriction(Double.parseDouble(args[2]));
-                    profile.setHorizontal(Double.parseDouble(args[3]));
-                    profile.setVertical(Double.parseDouble(args[4]));
-                    profile.setVerticalLimit(Double.parseDouble(args[5]));
-                    profile.setExtraHorizontal(Double.parseDouble(args[6]));
-                    profile.setExtraVertical(Double.parseDouble(args[7]));
-                    profile.setRecoilMultiplier(Double.parseDouble(args[8]));
-
-                    SpigotConfig.knockbackManager.saveProfiles();
-
+                PotionProfile profile = SpigotConfig.potionManager.getProfileByName(args[1]);
+                if (profile == null) {
+                    sender.sendMessage(ChatColor.RED + "A profile with that name couldn't be found.");
+                    return true;
+                }
+                if (SpigotConfig.potionManager.setAll(profile, args)) {
+                    SpigotConfig.potionManager.saveProfiles();
                     sender.sendMessage(ChatColor.GREEN + "Updated values.");
                 } else {
                     sender.sendMessage(ChatColor.RED + "Wrong syntax.");
@@ -115,15 +104,15 @@ public class KnockbackCommand extends Command {
             break;
             case "setglobal": {
                 if (args.length > 1) {
-                    KnockbackProfile profile = SpigotConfig.knockbackManager.getProfileByName(args[1]);
+                    PotionProfile profile = SpigotConfig.potionManager.getProfileByName(args[1]);
 
                     if (profile == null) {
                         sender.sendMessage(ChatColor.RED + "A profile with that name couldn't be found.");
                         return true;
                     }
 
-                    SpigotConfig.knockbackManager.setGlobalProfile(profile);
-                    SpigotConfig.knockbackManager.saveProfiles();
+                    SpigotConfig.potionManager.setGlobalProfile(profile);
+                    SpigotConfig.potionManager.saveProfiles();
 
                     sender.sendMessage(ChatColor.GREEN + "Global profile set to " + profile.getName() + ".");
                     return true;
@@ -131,7 +120,7 @@ public class KnockbackCommand extends Command {
             }
             break;
             case "reload": {
-                SpigotConfig.knockbackManager.loadProfile();
+                SpigotConfig.potionManager.loadProfile();
                 sender.sendMessage(ChatColor.GREEN + "reloaded.");
             }
             break;

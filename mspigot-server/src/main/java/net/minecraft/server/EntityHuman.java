@@ -981,8 +981,8 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
                                         profile.getExtraVertical(),
                                         (double) (MathHelper.cos(this.yaw * 3.1415927F / 180.0F) * (float) i * profile.getExtraHorizontal())
                                 );
-                                this.motX *= profile.getRecoilMultiplier();
-                                this.motZ *= profile.getRecoilMultiplier();
+                                this.motX *= profile.getSlowdown();
+                                this.motZ *= profile.getSlowdown();
                                 this.setSprinting(false);
                             }
                         }

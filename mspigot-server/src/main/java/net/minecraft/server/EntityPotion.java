@@ -103,12 +103,12 @@ public class EntityPotion extends EntityProjectile {
                     org.bukkit.event.entity.PotionSplashEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callPotionSplashEvent(this, affected);
 
                     // fast potions
-                    if(!event.isCancelled() && this.shooter != null && event.getEntity().getShooter() instanceof Player){
-                        Player shooter = (Player) event.getEntity().getShooter();
-                        if(shooter.isSprinting() && event.getIntensity(shooter) > 0.5D){
-                            event.setIntensity(shooter, 1.0D);
-                        }
-                    }
+//                    if(!event.isCancelled() && this.shooter != null && event.getEntity().getShooter() instanceof Player){
+//                        Player shooter = (Player) event.getEntity().getShooter();
+//                        if(shooter.isSprinting() && event.getIntensity(shooter) > 0.5D){
+//                            event.setIntensity(shooter, 1.0D);
+//                        }
+//                    }
 
 
                     if (!event.isCancelled() && list != null && !list.isEmpty()) { // do not process effects if there are no effects to process

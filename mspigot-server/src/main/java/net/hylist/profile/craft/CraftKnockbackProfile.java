@@ -1,4 +1,6 @@
-package net.hylist.profile;
+package net.hylist.profile.craft;
+
+import net.hylist.profile.KnockbackProfile;
 
 public class CraftKnockbackProfile implements KnockbackProfile {
 
@@ -9,7 +11,7 @@ public class CraftKnockbackProfile implements KnockbackProfile {
     private double verticalLimit = 0.4D;
     private double extraHorizontal = 0.425D;
     private double extraVertical = 0.085D;
-    private double recoilMultiplier = 0.6D;
+    private double slowdown = 0.6D;
 
     public CraftKnockbackProfile(String name) {
         this.name = name;
@@ -67,8 +69,8 @@ public class CraftKnockbackProfile implements KnockbackProfile {
         this.extraVertical = extraVertical;
     }
 
-    public double getRecoilMultiplier() { return recoilMultiplier; };
+    public double getSlowdown() { return slowdown; };
 
-    public void setRecoilMultiplier(double recoilMultiplier) {this.recoilMultiplier = recoilMultiplier; }
+    public void setSlowdown(double slowdown) {this.slowdown = slowdown; }
 
 }

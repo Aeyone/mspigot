@@ -4,6 +4,7 @@ import java.util.List;
 
 import net.jafama.FastMath;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.spigotmc.SpigotConfig;
 
 public abstract class EntityProjectile extends Entity implements IProjectile {
@@ -32,9 +33,13 @@ public abstract class EntityProjectile extends Entity implements IProjectile {
         this.projectileSource = (org.bukkit.entity.LivingEntity) entityliving.getBukkitEntity(); // CraftBukkit
         this.a(0.25F, 0.25F);
         this.setPositionRotation(entityliving.locX, entityliving.locY + (double) entityliving.getHeadHeight(), entityliving.locZ, entityliving.yaw, entityliving.pitch);
-        this.locX -= (double) (FastMath.cos(this.yaw / 180.0F * 3.1415927F) * 0.16F);
+        float distance = 0.16F;
+        if (this instanceof EntityPotion && entityliving instanceof EntityPlayer) {
+            distance = entityliving.getPotion().getSplashDistance();
+        }
+        this.locX -= (double) (FastMath.sin(this.yaw / 180.0F * 3.1415927F) * FastMath.cos(this.pitch / 180.0F * 3.1415927F) * distance);
         this.locY -= 0.10000000149011612D;
-        this.locZ -= (double) (FastMath.sin(this.yaw / 180.0F * 3.1415927F) * 0.16F);
+        this.locZ += (double) (FastMath.cos(this.yaw / 180.0F * 3.1415927F) * FastMath.cos(this.pitch / 180.0F * 3.1415927F) * distance);
         this.setPosition(this.locX, this.locY, this.locZ);
         this.height = 0.0F;
         float f = 0.4F;
@@ -131,9 +136,22 @@ public abstract class EntityProjectile extends Entity implements IProjectile {
             for (int i = 0; i < list.size(); ++i) {
                 Entity entity1 = (Entity) list.get(i);
 
-                if (entity1.R() && (entity1 != entityliving || this.at >= 5)) {
-                    float f = 0.3F;
-                    AxisAlignedBB axisalignedbb = entity1.boundingBox.grow((double) f, (double) f, (double) f);
+                if (entity1.R()) {
+                    if (entity1 == entityliving && ( !(this instanceof EntityPotion) || !(entityliving instanceof EntityPlayer) ) && this.at < 5) {
+                        continue;
+                    }
+                    if (entity1 == entityliving && this instanceof EntityPotion && entityliving instanceof EntityPlayer && this.at < entityliving.getPotion().getSplashTick()) {
+                        continue;
+                    }
+                    float fx = 0.3F;
+                    float fy = 0.3F;
+                    float fz = 0.3F;
+                    if (this instanceof EntityPotion && entityliving instanceof EntityPlayer) {
+                        fx = entityliving.getPotion().getPotionSize();
+                        fz = entityliving.getPotion().getPotionSize();
+                    }
+
+                    AxisAlignedBB axisalignedbb = entity1.boundingBox.grow((double) fx, (double) fy, (double) fz);
                     MovingObjectPosition movingobjectposition1 = axisalignedbb.a(vec3d, vec3d1);
 
                     // Smooth Potting

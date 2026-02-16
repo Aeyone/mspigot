@@ -10,7 +10,7 @@
             "verticalLimit": "0.4",
             "extraHorizontal": "0.425",
             "extraVertical": "0.085",
-            "recoilMultiplier": "0.6"
+            "slowdown": "0.6"
         }
     }
 }

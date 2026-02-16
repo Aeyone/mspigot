@@ -10,10 +10,13 @@ import java.net.URL;
 import java.util.*;
 import java.util.logging.Level;
 
-import net.hylist.command.PotionCommand;
-import net.hylist.command.KnockbackCommand;
+import net.hylist.profile.command.PotionCommand;
+import net.hylist.profile.command.KnockbackCommand;
 import net.hylist.profile.*;
 
+import net.hylist.profile.ProfileManager;
+import net.hylist.profile.factory.KnockbackProfileFactory;
+import net.hylist.profile.factory.PotionProfileFactory;
 import net.minecraft.server.AttributeRanged;
 import net.minecraft.server.GenericAttributes;
 import net.minecraft.util.gnu.trove.map.hash.TObjectIntHashMap;

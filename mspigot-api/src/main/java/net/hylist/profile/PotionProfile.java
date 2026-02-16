@@ -24,4 +24,16 @@ public interface PotionProfile extends Profile {
     boolean isFollowSpeedLevel();
 
     void setFollowSpeedLevel(boolean followSpeedLevel);
+
+    float getPotionSize();
+
+    void setPotionSize(float potionSize);
+
+    int getSplashTick();
+
+    void setSplashTick(int splashTick);
+
+    float getSplashDistance();
+
+    void setSplashDistance(float splashDistance);
 }

@@ -26,8 +26,8 @@ public interface KnockbackProfile extends Profile {
 
     void setExtraVertical(double extraVertical);
 
-    double getRecoilMultiplier();
+    double getSlowdown();
 
-    void setRecoilMultiplier(double recoilMultiplier);
+    void setSlowdown(double slowdown);
 
 }

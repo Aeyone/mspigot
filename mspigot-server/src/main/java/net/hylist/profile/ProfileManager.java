@@ -2,6 +2,7 @@ package net.hylist.profile;
 
 import net.hylist.json.JsonConfig;
 
+import net.hylist.profile.factory.ProfileFactory;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -113,5 +114,9 @@ public class ProfileManager<T extends Profile>{
         }
 
         sender.sendMessage(ChatColor.BLUE + ChatColor.STRIKETHROUGH.toString() + StringUtils.repeat("-", 35));
+    }
+
+    public boolean setAll(T profile, String[] args) {
+        return factory.setAll(profile, args);
     }
 }

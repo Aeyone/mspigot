@@ -1,4 +1,6 @@
-package net.hylist.profile;
+package net.hylist.profile.craft;
+
+import net.hylist.profile.PotionProfile;
 
 public class CraftPotionProfile implements PotionProfile {
 
@@ -9,6 +11,11 @@ public class CraftPotionProfile implements PotionProfile {
     private boolean followSpeedLevel = true;
     private double potionExtraHorizontal = 1.0D;
     private double potionExtraVertical = 1.0D;
+    private float potionSize = 0.3F;
+    private int splashTick = 5;
+    private float splashDistance = 0.16F;
+
+
 
     public CraftPotionProfile(String name) {
         this.name = name;
@@ -70,5 +77,27 @@ public class CraftPotionProfile implements PotionProfile {
 
     @Override
     public void setFollowSpeedLevel(boolean followSpeedLevel) { this.followSpeedLevel = followSpeedLevel; }
+
+    @Override
+    public float getPotionSize() { return potionSize; }
+
+    @Override
+    public void setPotionSize(float potionSize) { this.potionSize = potionSize; }
+
+    @Override
+    public int getSplashTick() { return splashTick; }
+
+    @Override
+    public void setSplashTick(int splashTick) { this.splashTick = splashTick; }
+
+    @Override
+    public float getSplashDistance() {
+        return splashDistance;
+    }
+
+    @Override
+    public void setSplashDistance(float splashDistance) {
+        this.splashDistance = splashDistance;
+    }
 
 }
