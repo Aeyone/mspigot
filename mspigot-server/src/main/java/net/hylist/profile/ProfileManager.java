@@ -21,9 +21,9 @@ import java.util.Map;
 public class ProfileManager<T extends Profile>{
     private final ProfileFactory<T> factory;
     private final List<T> profiles = new ArrayList<>();
+    private T globalProfile;
     private final File file;
     private JsonConfig config;
-    private T globalProfile;
 
     public T getGlobalProfile() {
         return globalProfile;
@@ -86,6 +86,9 @@ public class ProfileManager<T extends Profile>{
 
     public void sendInfo(CommandSender sender) {
         sender.sendMessage(ChatColor.BLUE + ChatColor.STRIKETHROUGH.toString() + StringUtils.repeat("-", 35));
+        sender.sendMessage("");
+        sender.sendMessage(ChatColor.YELLOW + "Profile Type: " + ChatColor.GOLD.toString() + ChatColor.BOLD + globalProfile.getType());
+        sender.sendMessage("");
 
         for (T profile : profiles) {
             boolean isGlobal = globalProfile.getName().equals(profile.getName());
@@ -95,24 +98,42 @@ public class ProfileManager<T extends Profile>{
             ChatColor currentColor = colorState[(isGlobal ? 1 : 0) << 1 | (isCurrent ? 1 : 0)];
 
             if (sender instanceof Player) {
-                TextComponent title = new TextComponent();
+                TextComponent text = new TextComponent("");
 
-                title.setColor(currentColor);
-                title.setBold(true);
-                title.setText(profile.getName());
+                TextComponent title = new TextComponent(
+                    new ComponentBuilder("\u00BB ").color(ChatColor.GOLD).bold(true)
+                            .append(profile.getName() + " ").color(currentColor).bold(true)
+                            .create()
+                );
                 title.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, factory.updateMessage(profile)));
-
-                title.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                        new ComponentBuilder(ChatColor.GREEN + "Click to edit").create()
+                title.setHoverEvent(
+                        new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                        new ComponentBuilder(profile.getName()).color(currentColor).bold(true)
+                                .append(" [Click to edit]\n").color(ChatColor.GREEN).bold(false)
+                                .append(String.join("\n", factory.sendAll(profile)))
+                                .create()
                 ));
+                text.addExtra(title);
 
-                ((Player)sender).spigot().sendMessage(title);
+                if (profile.getName() != globalProfile.getName()) {
+                    TextComponent button = new TextComponent();
+                    button.setText("[*]");
+                    button.setColor(ChatColor.GRAY);
+                    button.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/" + profile.getType() + " setglobal " + profile.getName()));
+                    button.setHoverEvent(
+                        new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                        new ComponentBuilder("Click to set global profile").color(ChatColor.GREEN).create()
+                    ));
+                    text.addExtra(button);
+                }
+                ((Player)sender).spigot().sendMessage(text);
+
             } else {
                 sender.sendMessage(currentColor.toString() + ChatColor.BOLD + profile.getName());
+                factory.sendAll(profile).forEach(sender::sendMessage);
             }
-            factory.sendAll(sender, profile);
         }
-
+        sender.sendMessage("");
         sender.sendMessage(ChatColor.BLUE + ChatColor.STRIKETHROUGH.toString() + StringUtils.repeat("-", 35));
     }
 

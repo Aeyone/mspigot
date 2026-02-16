@@ -1,11 +1,14 @@
 package net.hylist.profile.factory;
 
+import com.google.common.collect.ImmutableList;
 import net.hylist.json.JsonConfig;
 import net.hylist.profile.craft.CraftKnockbackProfile;
 import net.hylist.profile.KnockbackProfile;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+
+import java.util.List;
 
 public class KnockbackProfileFactory implements ProfileFactory<KnockbackProfile>{
 
@@ -57,14 +60,16 @@ public class KnockbackProfileFactory implements ProfileFactory<KnockbackProfile>
     }
 
     @Override
-    public void sendAll(CommandSender sender, KnockbackProfile profile) {
-        sender.sendMessage(ChatColor.GOLD + "-> " + ChatColor.YELLOW + "Friction: " + ChatColor.RED + profile.getFriction());
-        sender.sendMessage(ChatColor.GOLD + "-> " + ChatColor.YELLOW + "Horizontal: " + ChatColor.RED + profile.getHorizontal());
-        sender.sendMessage(ChatColor.GOLD + "-> " + ChatColor.YELLOW + "Vertical: " + ChatColor.RED + profile.getVertical());
-        sender.sendMessage(ChatColor.GOLD + "-> " + ChatColor.YELLOW + "Vertical Limit: " + ChatColor.RED + profile.getVerticalLimit());
-        sender.sendMessage(ChatColor.GOLD + "-> " + ChatColor.YELLOW + "Extra Horizontal: " + ChatColor.RED + profile.getExtraHorizontal());
-        sender.sendMessage(ChatColor.GOLD + "-> " + ChatColor.YELLOW + "Extra Vertical: " + ChatColor.RED + profile.getExtraVertical());
-        sender.sendMessage(ChatColor.GOLD + "-> " + ChatColor.YELLOW + "Slowdown : " + ChatColor.RED + profile.getSlowdown());
+    public List<String> sendAll(KnockbackProfile profile) {
+        return ImmutableList.of(
+            ChatColor.GOLD + "-> " + ChatColor.YELLOW + "Friction: " + ChatColor.RED + profile.getFriction(),
+            ChatColor.GOLD + "-> " + ChatColor.YELLOW + "Horizontal: " + ChatColor.RED + profile.getHorizontal(),
+            ChatColor.GOLD + "-> " + ChatColor.YELLOW + "Vertical: " + ChatColor.RED + profile.getVertical(),
+            ChatColor.GOLD + "-> " + ChatColor.YELLOW + "Vertical Limit: " + ChatColor.RED + profile.getVerticalLimit(),
+            ChatColor.GOLD + "-> " + ChatColor.YELLOW + "Extra Horizontal: " + ChatColor.RED + profile.getExtraHorizontal(),
+            ChatColor.GOLD + "-> " + ChatColor.YELLOW + "Extra Vertical: " + ChatColor.RED + profile.getExtraVertical(),
+            ChatColor.GOLD + "-> " + ChatColor.YELLOW + "Slowdown : " + ChatColor.RED + profile.getSlowdown()
+        );
     }
 
     @Override

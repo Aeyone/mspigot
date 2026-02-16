@@ -1,11 +1,14 @@
 package net.hylist.profile.factory;
 
+import com.google.common.collect.ImmutableList;
 import net.hylist.json.JsonConfig;
 import net.hylist.profile.craft.CraftPotionProfile;
 import net.hylist.profile.PotionProfile;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+
+import java.util.List;
 
 public class PotionProfileFactory implements ProfileFactory<PotionProfile>{
     @Override
@@ -62,16 +65,18 @@ public class PotionProfileFactory implements ProfileFactory<PotionProfile>{
     }
 
     @Override
-    public void sendAll(CommandSender sender, PotionProfile profile) {
-        sender.sendMessage(ChatColor.GOLD + "-> " + ChatColor.YELLOW + "Fall: " + ChatColor.RED + profile.getPotionFall());
-        sender.sendMessage(ChatColor.GOLD + "-> " + ChatColor.YELLOW + "Multiplier: " + ChatColor.RED + profile.getPotionMultiplier());
-        sender.sendMessage(ChatColor.GOLD + "-> " + ChatColor.YELLOW + "Offset: " + ChatColor.RED + profile.getPotionOffset());
-        sender.sendMessage(ChatColor.GOLD + "-> " + ChatColor.YELLOW + "Following Speed Level: " + ChatColor.RED + profile.isFollowSpeedLevel());
-        sender.sendMessage(ChatColor.GOLD + "-> " + ChatColor.YELLOW + "Extra Horizontal: " + ChatColor.RED + profile.getPotionExtraHorizontal());
-        sender.sendMessage(ChatColor.GOLD + "-> " + ChatColor.YELLOW + "Extra Vertical: " + ChatColor.RED + profile.getPotionExtraVertical());
-        sender.sendMessage(ChatColor.GOLD + "-> " + ChatColor.YELLOW + "Size: " + ChatColor.RED + profile.getPotionSize());
-        sender.sendMessage(ChatColor.GOLD + "-> " + ChatColor.YELLOW + "Splash Tick: " + ChatColor.RED + profile.getSplashTick());
-        sender.sendMessage(ChatColor.GOLD + "-> " + ChatColor.YELLOW + "Splash Distance: " + ChatColor.RED + profile.getSplashDistance());
+    public List<String> sendAll(PotionProfile profile) {
+        return ImmutableList.of(
+            ChatColor.GOLD + "-> " + ChatColor.YELLOW + "Fall: " + ChatColor.RED + profile.getPotionFall(),
+            ChatColor.GOLD + "-> " + ChatColor.YELLOW + "Multiplier: " + ChatColor.RED + profile.getPotionMultiplier(),
+            ChatColor.GOLD + "-> " + ChatColor.YELLOW + "Offset: " + ChatColor.RED + profile.getPotionOffset(),
+            ChatColor.GOLD + "-> " + ChatColor.YELLOW + "Following Speed Level: " + ChatColor.RED + profile.isFollowSpeedLevel(),
+            ChatColor.GOLD + "-> " + ChatColor.YELLOW + "Extra Horizontal: " + ChatColor.RED + profile.getPotionExtraHorizontal(),
+            ChatColor.GOLD + "-> " + ChatColor.YELLOW + "Extra Vertical: " + ChatColor.RED + profile.getPotionExtraVertical(),
+            ChatColor.GOLD + "-> " + ChatColor.YELLOW + "Size: " + ChatColor.RED + profile.getPotionSize(),
+            ChatColor.GOLD + "-> " + ChatColor.YELLOW + "Splash Tick: " + ChatColor.RED + profile.getSplashTick(),
+            ChatColor.GOLD + "-> " + ChatColor.YELLOW + "Splash Distance: " + ChatColor.RED + profile.getSplashDistance()
+        );
     }
 
     @Override

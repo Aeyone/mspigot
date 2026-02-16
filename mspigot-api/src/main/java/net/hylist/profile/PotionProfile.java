@@ -1,6 +1,12 @@
 package net.hylist.profile;
 
 public interface PotionProfile extends Profile {
+
+    @Override
+    default String getType(){
+        return "Potion";
+    }
+
     float getPotionFall();
 
     void setPotionFall(float potionFall);

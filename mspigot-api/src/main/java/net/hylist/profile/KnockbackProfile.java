@@ -2,6 +2,11 @@ package net.hylist.profile;
 
 public interface KnockbackProfile extends Profile {
 
+    @Override
+    default String getType(){
+        return "Knockback";
+    }
+
     double getFriction();
 
     void setFriction(double friction);

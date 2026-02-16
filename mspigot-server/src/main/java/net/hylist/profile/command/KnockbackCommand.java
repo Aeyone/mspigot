@@ -97,6 +97,7 @@ public class KnockbackCommand extends Command {
                 if (SpigotConfig.knockbackManager.setAll(profile, args)) {
                     SpigotConfig.knockbackManager.saveProfiles();
                     sender.sendMessage(ChatColor.GREEN + "Updated values.");
+                    SpigotConfig.knockbackManager.sendInfo(sender);
                 } else {
                     sender.sendMessage(ChatColor.RED + "Wrong syntax.");
                 }
@@ -115,6 +116,7 @@ public class KnockbackCommand extends Command {
                     SpigotConfig.knockbackManager.saveProfiles();
 
                     sender.sendMessage(ChatColor.GREEN + "Global profile set to " + profile.getName() + ".");
+                    SpigotConfig.knockbackManager.sendInfo(sender);
                     return true;
                 }
             }

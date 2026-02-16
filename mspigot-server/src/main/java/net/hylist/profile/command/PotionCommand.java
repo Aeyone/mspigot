@@ -97,6 +97,7 @@ public class PotionCommand extends Command {
                 if (SpigotConfig.potionManager.setAll(profile, args)) {
                     SpigotConfig.potionManager.saveProfiles();
                     sender.sendMessage(ChatColor.GREEN + "Updated values.");
+                    SpigotConfig.potionManager.sendInfo(sender);
                 } else {
                     sender.sendMessage(ChatColor.RED + "Wrong syntax.");
                 }
@@ -115,6 +116,7 @@ public class PotionCommand extends Command {
                     SpigotConfig.potionManager.saveProfiles();
 
                     sender.sendMessage(ChatColor.GREEN + "Global profile set to " + profile.getName() + ".");
+                    SpigotConfig.potionManager.sendInfo(sender);
                     return true;
                 }
             }
