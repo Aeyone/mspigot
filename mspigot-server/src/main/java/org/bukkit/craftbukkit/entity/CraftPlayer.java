@@ -655,7 +655,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         WorldServer toWorld = ((CraftWorld) to.getWorld()).getHandle();
 
         // Close any foreign inventory
-        if (getHandle().activeContainer != getHandle().defaultContainer) {
+        if (getHandle().activeContainer != getHandle().defaultContainer && SpigotConfig.closeMenuOnTeleport) {
             getHandle().closeInventory();
         }
 

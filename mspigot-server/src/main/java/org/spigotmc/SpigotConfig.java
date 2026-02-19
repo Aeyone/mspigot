@@ -592,5 +592,10 @@ public class SpigotConfig
     private static void pearls() {
         pearlThroughGatesAndTripwire = getBoolean("settings.pearl-through-gates-and-tripwire", false);
     }
+
+    public static boolean closeMenuOnTeleport = true;
+    private static void closeMenuOnTeleport() {
+        closeMenuOnTeleport = getBoolean("settings.closeMenuOnTeleport", true);
+    }
     
 }
