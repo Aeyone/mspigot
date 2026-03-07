@@ -63,7 +63,7 @@ public class AutoSave {
             case IDLE:
                 break;
             case START:
-                MinecraftServer.getLogger().info("[Autosave] Started ..");
+//                MinecraftServer.getLogger().info("[Autosave] Started ..");
                 for(WorldServer world: this.saveChunksQueue) {
                     world.getAutoSaveWorldData().setLastAutosaveTimeStamp();
                 }
@@ -138,7 +138,9 @@ public class AutoSave {
                 this.moveToNextStep();
                 break;                
             case FINISHED:
-                MinecraftServer.getLogger().info("[Autosave] Done. Queued " + this.chunkQueuedCount + " chunks for saving. Took " + formatLongTime(this.fileioEnd - this.fileioStart) + " seconds to write them.");
+                if (this.chunkQueuedCount > 0) {
+                    MinecraftServer.getLogger().info("[Autosave] Done. Queued " + this.chunkQueuedCount + " chunks for saving. Took " + formatLongTime(this.fileioEnd - this.fileioStart) + " seconds to write them.");
+                }
                 if(SpigotConfig.autoSaveClearRegionFileCache) {
                     MinecraftServer.getLogger().info("[Autosave] Cleared " + this.regionFileCount + " cached region files in " + formatLongTime(this.regionFileCacheEnd - this.regionFileCacheStart) + " seconds.");
                 }

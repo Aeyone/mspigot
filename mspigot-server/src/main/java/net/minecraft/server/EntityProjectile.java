@@ -37,16 +37,17 @@ public abstract class EntityProjectile extends Entity implements IProjectile {
         if (this instanceof EntityPotion && entityliving instanceof EntityPlayer) {
             distance = entityliving.getPotion().getSplashDistance();
         }
-        this.locX -= (double) (FastMath.sin(this.yaw / 180.0F * 3.1415927F) * FastMath.cos(this.pitch / 180.0F * 3.1415927F) * distance);
+        double angle = 7.52 * Math.pow(distance, -1.35);
+        this.locX -= (double) (FastMath.sin((this.yaw + (float)angle) / 180.0F * 3.1415927F) * FastMath.cos(this.pitch / 180.0F * 3.1415927F) * distance);
         this.locY -= 0.10000000149011612D;
-        this.locZ += (double) (FastMath.cos(this.yaw / 180.0F * 3.1415927F) * FastMath.cos(this.pitch / 180.0F * 3.1415927F) * distance);
+        this.locZ += (double) (FastMath.cos((this.yaw + (float)angle) / 180.0F * 3.1415927F) * FastMath.cos(this.pitch / 180.0F * 3.1415927F) * distance);
         this.setPosition(this.locX, this.locY, this.locZ);
         this.height = 0.0F;
         float f = 0.4F;
 
-        this.motX = (double) (-MathHelper.sin(this.yaw / 180.0F * 3.1415927F) * MathHelper.cos(this.pitch / 180.0F * 3.1415927F) * f);
-        this.motZ = (double) (MathHelper.cos(this.yaw / 180.0F * 3.1415927F) * MathHelper.cos(this.pitch / 180.0F * 3.1415927F) * f);
-        this.motY = (double) (-MathHelper.sin((this.pitch + this.f()) / 180.0F * 3.1415927F) * f);
+        this.motX = (double) (-FastMath.sin(this.yaw / 180.0F * 3.1415927F) * FastMath.cos(this.pitch / 180.0F * 3.1415927F) * f);
+        this.motZ = (double) (FastMath.cos(this.yaw / 180.0F * 3.1415927F) * FastMath.cos(this.pitch / 180.0F * 3.1415927F) * f);
+        this.motY = (double) (-FastMath.sin((this.pitch + this.f()) / 180.0F * 3.1415927F) * f);
         this.shoot(this.motX, this.motY, this.motZ, this.e(), 1.0F);
     }
 
