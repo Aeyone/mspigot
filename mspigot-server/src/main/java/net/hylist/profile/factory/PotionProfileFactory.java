@@ -27,6 +27,7 @@ public class PotionProfileFactory implements ProfileFactory<PotionProfile>{
         profile.setPotionSize(Float.valueOf(config.getString(path + ".potionSize")));
         profile.setSplashTick(Integer.valueOf(config.getString(path + ".splashTick")));
         profile.setSplashDistance(Float.valueOf(config.getString(path + ".splashDistance")));
+        profile.setFixTick(Integer.valueOf(config.getString(path + ".fixTick")));
     }
 
     @Override
@@ -40,6 +41,7 @@ public class PotionProfileFactory implements ProfileFactory<PotionProfile>{
         config.set(path + ".potionSize", profile.getPotionSize());
         config.set(path + ".splashTick", profile.getSplashTick());
         config.set(path + ".splashDistance", profile.getSplashDistance());
+        config.set(path + ".fixTick", profile.getFixTick());
     }
 
     @Override
@@ -60,7 +62,8 @@ public class PotionProfileFactory implements ProfileFactory<PotionProfile>{
             profile.getPotionExtraVertical() + " " +
             profile.getPotionSize() + " " +
             profile.getSplashTick() + " " +
-            profile.getSplashDistance()
+            profile.getSplashDistance() + " " +
+            profile.getFixTick()
         );
     }
 
@@ -75,13 +78,14 @@ public class PotionProfileFactory implements ProfileFactory<PotionProfile>{
             ChatColor.GOLD + "-> " + ChatColor.YELLOW + "Extra Vertical: " + ChatColor.RED + profile.getPotionExtraVertical(),
             ChatColor.GOLD + "-> " + ChatColor.YELLOW + "Size: " + ChatColor.RED + profile.getPotionSize(),
             ChatColor.GOLD + "-> " + ChatColor.YELLOW + "Splash Tick: " + ChatColor.RED + profile.getSplashTick(),
-            ChatColor.GOLD + "-> " + ChatColor.YELLOW + "Splash Distance: " + ChatColor.RED + profile.getSplashDistance()
+            ChatColor.GOLD + "-> " + ChatColor.YELLOW + "Splash Distance: " + ChatColor.RED + profile.getSplashDistance(),
+            ChatColor.GOLD + "-> " + ChatColor.YELLOW + "FixTick: " + ChatColor.RED + profile.getFixTick()
         );
     }
 
     @Override
     public boolean setAll(PotionProfile profile, String[] args) {
-        if (args.length == 11) {
+        if (args.length == 12) {
             profile.setPotionFall(Float.parseFloat(args[2]));
             profile.setPotionMultiplier(Float.parseFloat(args[3]));
             profile.setPotionOffset(Float.parseFloat(args[4]));
@@ -91,6 +95,7 @@ public class PotionProfileFactory implements ProfileFactory<PotionProfile>{
             profile.setPotionSize(Float.parseFloat(args[8]));
             profile.setSplashTick(Integer.parseInt(args[9]));
             profile.setSplashDistance(Float.parseFloat(args[10]));
+            profile.setFixTick(Integer.parseInt(args[11]));
             return true;
         } else {
             return false;

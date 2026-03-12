@@ -42,4 +42,8 @@ public interface PotionProfile extends Profile {
     float getSplashDistance();
 
     void setSplashDistance(float splashDistance);
+
+    int getFixTick();
+
+    void setFixTick(int fixTick);
 }

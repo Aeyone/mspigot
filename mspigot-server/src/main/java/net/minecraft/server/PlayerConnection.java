@@ -143,6 +143,10 @@ public class PlayerConnection implements PacketPlayInListener {
             );
     // Alfie end
 
+    public float lastClientYaw;
+    public float lastClientPitch;
+    public long lastRotationPacket;
+
     public PlayerConnection(MinecraftServer minecraftserver, NetworkManager networkmanager, EntityPlayer entityplayer) {
         this.minecraftServer = minecraftserver;
         this.networkManager = networkmanager;
@@ -262,6 +266,11 @@ public class PlayerConnection implements PacketPlayInListener {
     }
 
     public void a(PacketPlayInFlying packetplayinflying) {
+        if (packetplayinflying.hasLook) { // hasLook
+            this.lastClientYaw = packetplayinflying.g();
+            this.lastClientPitch = packetplayinflying.h();
+            this.lastRotationPacket = System.currentTimeMillis();
+        }
         // CraftBukkit start - Check for NaN
         if (Double.isNaN(packetplayinflying.x) || Double.isNaN(packetplayinflying.y) || Double.isNaN(packetplayinflying.z) || Double.isNaN(packetplayinflying.stance)) {
             c.warn(player.getName() + " was caught trying to crash the server with an invalid position.");

@@ -1229,34 +1229,8 @@ public abstract class World implements IBlockAccess {
         } else if (entity instanceof EntityItem) {
             event = CraftEventFactory.callItemSpawnEvent((EntityItem) entity);
         } else if (entity.getBukkitEntity() instanceof org.bukkit.entity.Projectile) {
-            // Only cast to EntityProjectile if it is actually an instance of EntityProjectile
-            if (entity instanceof EntityProjectile) {
-                EntityProjectile entityProjectile = (EntityProjectile) entity;
-
-                // Not all projectiles extend EntityProjectile, so check for Bukkit interface instead
-                if (entityProjectile instanceof EntityPotion && entityProjectile.shooter instanceof EntityPlayer) {
-                    EntityPlayer ep = (EntityPlayer) entityProjectile.shooter;
-                    int level = 10;
-                    for (PotionEffect effect : ep.getBukkitEntity().getActivePotionEffects()) {
-                        if (effect.getType().getName().equals("SPEED")) {
-                            level += effect.getAmplifier() + 1;
-                        }
-                    }
-                    PotionProfile profile = ep.getPotion();
-                    if (ep.isSprinting()) {
-                        Vector velocity = entityProjectile.getBukkitEntity().getVelocity();
-
-                        velocity.setX(velocity.getX() * profile.getPotionExtraHorizontal() * (profile.isFollowSpeedLevel() ? 0.1D * level : 1));
-                        velocity.setY(velocity.getY() + profile.getPotionExtraVertical());
-                        velocity.setZ(velocity.getZ() * profile.getPotionExtraHorizontal() * (profile.isFollowSpeedLevel() ? 0.1D * level : 1));
-                        entityProjectile.getBukkitEntity().setVelocity(velocity);
-                    }
-                }
-
-                event = CraftEventFactory.callProjectileLaunchEvent(entity);
-            } else {
-                event = CraftEventFactory.callProjectileLaunchEvent(entity);
-            }
+            // Not all projectiles extend EntityProjectile, so check for Bukkit interface instead
+            event = CraftEventFactory.callProjectileLaunchEvent(entity);
         }
         // Spigot start
         else if (entity instanceof EntityExperienceOrb) {

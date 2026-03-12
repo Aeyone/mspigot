@@ -2,9 +2,12 @@ package net.minecraft.server;
 
 import java.util.List;
 
+import net.hylist.profile.PotionProfile;
 import net.jafama.FastMath;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.util.Vector;
 import org.spigotmc.SpigotConfig;
 
 public abstract class EntityProjectile extends Entity implements IProjectile {
@@ -20,6 +23,8 @@ public abstract class EntityProjectile extends Entity implements IProjectile {
     private int i;
     private int at;
 
+    private int viewFixTicks = 0;
+
     public EntityProjectile(World world) {
         super(world);
         this.a(0.25F, 0.25F);
@@ -31,6 +36,9 @@ public abstract class EntityProjectile extends Entity implements IProjectile {
         super(world);
         this.shooter = entityliving;
         this.projectileSource = (org.bukkit.entity.LivingEntity) entityliving.getBukkitEntity(); // CraftBukkit
+        if (this instanceof EntityPotion && entityliving instanceof EntityPlayer) {
+            this.viewFixTicks = 0;
+        }
         this.a(0.25F, 0.25F);
         this.setPositionRotation(entityliving.locX, entityliving.locY + (double) entityliving.getHeadHeight(), entityliving.locZ, entityliving.yaw, entityliving.pitch);
         float distance = 0.16F;
@@ -90,6 +98,42 @@ public abstract class EntityProjectile extends Entity implements IProjectile {
     }
 
     public void h() {
+        if (this instanceof EntityPotion && shooter instanceof EntityPlayer) {
+            EntityPlayer ep = (EntityPlayer) shooter;
+            PotionProfile profile = ep.getPotion();
+
+            int fixTick = profile.getFixTick();
+
+            if (viewFixTicks < fixTick) {
+
+                float yaw = ep.playerConnection.lastClientYaw;
+                float pitch = ep.playerConnection.lastClientPitch;
+                float f = 0.4F;
+
+                motX = -FastMath.sin(yaw / 180.0F * 3.1415927F) * FastMath.cos(pitch / 180.0F * 3.1415927F) * f;
+                motY = -FastMath.sin((pitch + this.f()) / 180.0F * 3.1415927F) * f;
+                motZ =  FastMath.cos(yaw / 180.0F * 3.1415927F) * FastMath.cos(pitch / 180.0F * 3.1415927F) * f;
+
+                motX = motX * profile.getPotionMultiplier();
+                motY = motY * profile.getPotionMultiplier();
+                motZ = motZ * profile.getPotionMultiplier();
+
+                int level = 10;
+                for (PotionEffect effect : ep.getBukkitEntity().getActivePotionEffects()) {
+                    if (effect.getType().getName().equals("SPEED")) {
+                        level += effect.getAmplifier() + 1;
+                    }
+                }
+                if (ep.isSprinting()) {
+                    motX = motX * profile.getPotionExtraHorizontal() * (profile.isFollowSpeedLevel() ? 0.1D * level : 1);
+                    motY = motY + profile.getPotionExtraVertical();
+                    motZ = motZ * profile.getPotionExtraHorizontal() * (profile.isFollowSpeedLevel() ? 0.1D * level : 1);
+                }
+
+                this.viewFixTicks++;
+            }
+        }
+
         this.S = this.locX;
         this.T = this.locY;
         this.U = this.locZ;

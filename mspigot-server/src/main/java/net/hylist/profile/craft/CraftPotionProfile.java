@@ -14,6 +14,7 @@ public class CraftPotionProfile implements PotionProfile {
     private float potionSize = 0.3F;
     private int splashTick = 5;
     private float splashDistance = 0.16F;
+    private int fixTick = 1;
 
 
 
@@ -98,6 +99,16 @@ public class CraftPotionProfile implements PotionProfile {
     @Override
     public void setSplashDistance(float splashDistance) {
         this.splashDistance = splashDistance;
+    }
+
+    @Override
+    public int getFixTick() {
+        return fixTick;
+    }
+
+    @Override
+    public void setFixTick(int fixTick) {
+        this.fixTick = fixTick;
     }
 
 }

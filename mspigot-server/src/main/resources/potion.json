@@ -12,7 +12,8 @@
             "potionExtraVertical": "0.0",
             "potionSize": "0.3",
             "splashTick": "5",
-            "splashDistance": "0.16"
+            "splashDistance": "0.16",
+            "fixTick": "1"
         },
         "FastPotion":
         {
@@ -24,7 +25,8 @@
             "potionExtraVertical": "-0.085",
             "potionSize": "0.3",
             "splashTick": "4",
-            "splashDistance": "0.16"
+            "splashDistance": "0.16",
+            "fixTick": "1"
         }
     }
 }

@@ -42,10 +42,7 @@ public class EntityPotion extends EntityProjectile {
     }
 
     protected float e() {
-        if (shooter == null || !(shooter instanceof EntityPlayer))
-            return 0.5F;
-
-        return ((EntityPlayer) shooter).getPotion().getPotionMultiplier();
+        return 0.5F;
     }
 
     protected float f() {
