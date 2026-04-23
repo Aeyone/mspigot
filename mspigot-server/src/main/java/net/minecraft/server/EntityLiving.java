@@ -920,15 +920,14 @@ public abstract class EntityLiving extends Entity {
             KnockbackProfile profile = getKnockback();
 
             if (SpigotConfig.knockbackMode == SpigotConfig.KOHI) {
-                double magnitude = f1;
 
                 this.motX /= profile.getFriction();
                 this.motY /= profile.getFriction();
                 this.motZ /= profile.getFriction();
 
-                this.motX -= d0 / magnitude * profile.getHorizontal();
+                this.motX -= d0 / f1 * profile.getHorizontal();
                 this.motY += profile.getVertical();
-                this.motZ -= d1 / magnitude * profile.getHorizontal();
+                this.motZ -= d1 / f1 * profile.getHorizontal();
 
                 if (this.motY > profile.getVerticalLimit()) {
                     this.motY = profile.getVerticalLimit();

@@ -975,7 +975,7 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
                                 this.setApplyingSprintKnockback(false);
                             }
                         } else {
-                            if (i > 0) {
+                            if (i > 0 || (this instanceof EntityPlayer && !this.onGround) || !entity.onGround) {
                                 entity.g(
                                         (double) (-MathHelper.sin(this.yaw * 3.1415927F / 180.0F) * (float) i * profile.getExtraHorizontal()),
                                         profile.getExtraVertical(),
@@ -983,7 +983,9 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
                                 );
                                 this.motX *= profile.getSlowdown();
                                 this.motZ *= profile.getSlowdown();
-                                this.setSprinting(false);
+                                if (profile.isCancelSprint()) {
+                                    this.setSprinting(false);
+                                }
                             }
                         }
 
