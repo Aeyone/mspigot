@@ -39,8 +39,4 @@ public interface KnockbackProfile extends Profile {
 
     void setCancelSprint(boolean cancelSprint);
 
-    boolean isFallDamage();
-
-    void setFallDamage(boolean fallDamage);
-
 }
