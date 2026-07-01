@@ -13,6 +13,7 @@ public class CraftKnockbackProfile implements KnockbackProfile {
     private double extraVertical = 0.085D;
     private double slowdown = 0.6D;
     private boolean cancelSprint = true;
+    private boolean fallDamage = true;
 
     public CraftKnockbackProfile(String name) {
         this.name = name;
@@ -80,5 +81,13 @@ public class CraftKnockbackProfile implements KnockbackProfile {
 
     public void setCancelSprint(boolean cancelSprint) {
         this.cancelSprint = cancelSprint;
+    }
+
+    public boolean isFallDamage() {
+        return fallDamage;
+    }
+
+    public void setFallDamage(boolean fallDamage) {
+        this.fallDamage = fallDamage;
     }
 }

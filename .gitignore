@@ -32,3 +32,5 @@ manifest.mf
 *.iws
 .idea/
 
+.codex
+

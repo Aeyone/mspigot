@@ -926,7 +926,7 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
                     i += EnchantmentManager.getKnockbackEnchantmentLevel(this, (EntityLiving) entity);
                 }
 
-                if (this.isSprinting()) {
+                if (this.isSprinting() || (this instanceof EntityPlayer && !this.onGround) || !entity.onGround) {
                     ++i;
                 }
 
@@ -965,58 +965,47 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
                     KnockbackProfile profile = getKnockback();
 
                     if (flag2) {
-                        if (SpigotConfig.knockbackMode == SpigotConfig.MMC) {
-                            if (this.isApplyingSprintKnockback()) {
-                                entity.g(
-                                        -MathHelper.sin(this.yaw * 3.1415927f / 180.0f) * i * 0.5f,
-                                        0.1,
-                                        MathHelper.cos(this.yaw * 3.1415927f / 180.0f) * i * 0.5f
-                                );
-                                this.setApplyingSprintKnockback(false);
-                            }
-                        } else {
-                            if (i > 0 || (this instanceof EntityPlayer && !this.onGround) || !entity.onGround) {
-                                entity.g(
-                                        (double) (-MathHelper.sin(this.yaw * 3.1415927F / 180.0F) * (float) i * profile.getExtraHorizontal()),
-                                        profile.getExtraVertical(),
-                                        (double) (MathHelper.cos(this.yaw * 3.1415927F / 180.0F) * (float) i * profile.getExtraHorizontal())
-                                );
-                                this.motX *= profile.getSlowdown();
-                                this.motZ *= profile.getSlowdown();
-                                if (profile.isCancelSprint()) {
-                                    this.setSprinting(false);
-                                }
-                            }
+                        if (i > 0) {
+                            entity.g(
+                                    (double) (-MathHelper.sin(this.yaw * 3.1415927F / 180.0F) * (float) i * profile.getExtraHorizontal()),
+                                    profile.getExtraVertical(),
+                                    (double) (MathHelper.cos(this.yaw * 3.1415927F / 180.0F) * (float) i * profile.getExtraHorizontal())
+                            );
+                        }
+                        this.motX *= profile.getSlowdown();
+                        this.motZ *= profile.getSlowdown();
+                        if (profile.isCancelSprint()) {
+                            this.setSprinting(false);
                         }
 
-                        // Kohi start
-                        // If the attack caused knockback, send the new velocity to the victim's client immediately,
-                        // and undo the change. Otherwise, if movement packets from the victim are processed before
-                        // the end of the tick, then friction may reduce the velocity considerably before it's sent
-                        // to the client, particularly if the victim was standing on the ground when those packets
-                        // were generated. And because this glitch is also likely to make server-side velocity very
-                        // inconsistent, we simply reverse the knockback after sending it so that KB, like most other
-                        // things, doesn't affect server velocity at all.
+                        // send the combat velocity immediately, then keep the
+                        // victim's server-side motion aligned with the packet the client received.
+
                         if (entity instanceof EntityPlayer && entity.velocityChanged) {
                             EntityPlayer attackedPlayer = (EntityPlayer) entity;
                             PlayerVelocityEvent event = new PlayerVelocityEvent(attackedPlayer.getBukkitEntity(), attackedPlayer.getBukkitEntity().getVelocity());
                             this.world.getServer().getPluginManager().callEvent(event);
 
                             if (!event.isCancelled()) {
-                                attackedPlayer.getBukkitEntity().setVelocityDirect(event.getVelocity());
+                                org.bukkit.util.Vector velocity = event.getVelocity();
+                                attackedPlayer.getBukkitEntity().setVelocityDirect(velocity);
                                 attackedPlayer.playerConnection.sendPacket(new PacketPlayOutEntityVelocity(attackedPlayer));
+
+                                // Guardian start
+                                attackedPlayer.playerConnection.lastMotionTick = MinecraftServer.currentTick;
+                                // Guardian end
+
+                                attackedPlayer.motX = velocity.getX();
+                                attackedPlayer.motY = velocity.getY();
+                                attackedPlayer.motZ = velocity.getZ();
+                            } else {
+                                attackedPlayer.motX = victimMotX;
+                                attackedPlayer.motY = victimMotY;
+                                attackedPlayer.motZ = victimMotZ;
                             }
 
-                            // Guardian start
-                            attackedPlayer.playerConnection.lastMotionTick = MinecraftServer.currentTick;
-                            // Guardian end
-
                             attackedPlayer.velocityChanged = false;
-                            attackedPlayer.motX = victimMotX;
-                            attackedPlayer.motY = victimMotY;
-                            attackedPlayer.motZ = victimMotZ;
                         }
-                        // Kohi end
 
                         if (flag) {
                             this.b(entity);

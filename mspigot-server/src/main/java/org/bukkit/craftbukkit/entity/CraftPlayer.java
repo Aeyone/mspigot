@@ -94,6 +94,10 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         entity.motX = vel.getX();
         entity.motY = vel.getY();
         entity.motZ = vel.getZ();
+
+        if (entity instanceof EntityLiving && !((EntityLiving) entity).getKnockback().isFallDamage() && entity.motY > 0) {
+            entity.fallDistance = 0.0f;
+        }
     }
 
     public GameProfile getProfile() {

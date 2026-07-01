@@ -486,12 +486,8 @@ public class PlayerConnection implements PacketPlayInListener {
                 double yDelta = d2 - this.player.locY;
                 double zDelta = d3 - this.player.locZ;
                 // Guardian end
-                // CraftBukkit start - min to max
-                double d7 = Math.max(Math.abs(xDelta), Math.abs(this.player.motX));
-                double d8 = Math.max(Math.abs(yDelta), Math.abs(this.player.motY));
-                double d9 = Math.max(Math.abs(zDelta), Math.abs(this.player.motZ));
-                // CraftBukkit end
-                double d10 = d7 * d7 + d8 * d8 + d9 * d9;
+                double motionSquared = this.player.motX * this.player.motX + this.player.motY * this.player.motY + this.player.motZ * this.player.motZ;
+                double d10 = xDelta * xDelta + yDelta * yDelta + zDelta * zDelta;
 
                 // Spigot: make "moved too quickly" limit configurable
                 // Poweruser start
@@ -504,7 +500,7 @@ public class PlayerConnection implements PacketPlayInListener {
                         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "ban " + this.player.getName() + " Suspicious movement");
                     }
                 }
-                if (d10 > org.spigotmc.SpigotConfig.movedTooQuicklyThreshold && this.checkMovement && (!this.minecraftServer.N() || !this.minecraftServer.M().equals(this.player.getName()))) { // CraftBukkit - Added this.checkMovement condition to solve this check being triggered by teleports
+                if (d10 - motionSquared > org.spigotmc.SpigotConfig.movedTooQuicklyThreshold && this.checkMovement && (!this.minecraftServer.N() || !this.minecraftServer.M().equals(this.player.getName()))) { // CraftBukkit - Added this.checkMovement condition to solve this check being triggered by teleports
                     this.movedTooQuicklyViolations++;
                     this.lastViolationTick = MinecraftServer.currentTick;
                 // Poweruser end
@@ -522,7 +518,6 @@ public class PlayerConnection implements PacketPlayInListener {
 
                 this.player.move(xDelta, yDelta, zDelta);
                 this.player.onGround = packetplayinflying.i();
-                this.player.checkMovement(xDelta, yDelta, zDelta);
                 double d11 = yDelta;
 
                 xDelta = d1 - this.player.locX;
@@ -538,9 +533,6 @@ public class PlayerConnection implements PacketPlayInListener {
                 // Spigot: make "moved wrongly" limit configurable
                 // Poweruser start
                 double positionOffset = d10;
-                if(this.player.playerInteractManager.isCreative()) {
-                    positionOffset *= 2.0D;
-                }
 
                 if(this.movedWronglyViolations > 0 && violationDelayPassed) {
                     c.warn(this.player.getName() + " moved wrongly! Violations: " + this.movedWronglyViolations + " Average Offset: " + String.format("%.2f", (this.offsetDistanceSum / (double) this.movedWronglyViolations)));
@@ -548,7 +540,7 @@ public class PlayerConnection implements PacketPlayInListener {
                     this.offsetDistanceSum = 0.0D;
                 }
 
-                if (positionOffset > org.spigotmc.SpigotConfig.movedWronglyThreshold && !this.player.isSleeping()) {
+                if (positionOffset > org.spigotmc.SpigotConfig.movedWronglyThreshold && !this.player.isSleeping() && !this.player.playerInteractManager.isCreative()) {
                     flag1 = true;
                     this.lastViolationTick = MinecraftServer.currentTick;
                     this.movedWronglyViolations++;
@@ -557,14 +549,9 @@ public class PlayerConnection implements PacketPlayInListener {
                 // Poweruser end
 
                 // Poweruser start
-                double calculatedX = this.player.locX;
-                double calculatedY = this.player.locY;
-                double calculatedZ = this.player.locZ;
                 this.player.setLocation(d1, d2, d3, f2, f3);
+                this.player.checkMovement(this.player.locX - this.y, this.player.locY - this.z, this.player.locZ - this.q);
                 boolean flag2 = worldserver.getCubes(this.player, this.player.boundingBox.clone().shrink((double) f4, (double) f4, (double) f4)).isEmpty();
-                boolean rayTraceCollision = delta > 0.3 && worldserver.rayTrace(Vec3D.a(this.y, this.z + 1.0, this.q), Vec3D.a(d1, d2 + 1.0, d3), false, true, false) != null;
-
-                this.player.setLocation(calculatedX, calculatedY, calculatedZ, f2, f3);
 
                 SpigotTimings.connectionTimer_PacketFlying_move.stopTiming(); // Poweruser
                 // Poweruser end
@@ -574,13 +561,8 @@ public class PlayerConnection implements PacketPlayInListener {
                 }
 
                 // Poweruser start
-                if (flag1 || (!this.player.isSleeping() && flag && !flag2) || rayTraceCollision) {
-                    if(!rayTraceCollision && !flag && e % 3 != 0) {
-                        this.player.setPosition(this.y, this.z, this.q);
-                    } else {
-                        this.a(this.y, this.z, this.q, f2, f3);
-                    }
-
+                if (flag && (flag1 || !flag2) && !this.player.isSleeping()) {
+                    this.a(this.y, this.z, this.q, f2, f3);
                     return;
                 }
                 // Poweruser end
