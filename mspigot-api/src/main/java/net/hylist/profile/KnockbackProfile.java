@@ -35,8 +35,4 @@ public interface KnockbackProfile extends Profile {
 
     void setSlowdown(double slowdown);
 
-    boolean isCancelSprint();
-
-    void setCancelSprint(boolean cancelSprint);
-
 }

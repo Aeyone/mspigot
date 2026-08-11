@@ -26,7 +26,6 @@ public class KnockbackProfileFactory implements ProfileFactory<KnockbackProfile>
         profile.setExtraHorizontal(Double.valueOf(config.getString(path + ".extraHorizontal")));
         profile.setExtraVertical(Double.valueOf(config.getString(path + ".extraVertical")));
         profile.setSlowdown(Double.valueOf(config.getString(path + ".slowdown")));
-        profile.setCancelSprint(Boolean.valueOf(config.getString(path + ".cancelSprint")));
     }
 
     @Override
@@ -38,7 +37,6 @@ public class KnockbackProfileFactory implements ProfileFactory<KnockbackProfile>
         config.set(path + ".extraHorizontal", profile.getExtraHorizontal());
         config.set(path + ".extraVertical", profile.getExtraVertical());
         config.set(path + ".slowdown", profile.getSlowdown());
-        config.set(path + ".cancelSprint", profile.isCancelSprint());
     }
 
     @Override
@@ -57,8 +55,7 @@ public class KnockbackProfileFactory implements ProfileFactory<KnockbackProfile>
             profile.getVerticalLimit() + " " +
             profile.getExtraHorizontal() + " " +
             profile.getExtraVertical() + " " +
-            profile.getSlowdown() + " " +
-            profile.isCancelSprint()
+            profile.getSlowdown()
         );
     }
 
@@ -71,14 +68,13 @@ public class KnockbackProfileFactory implements ProfileFactory<KnockbackProfile>
             ChatColor.GOLD + "-> " + ChatColor.YELLOW + "Vertical Limit: " + ChatColor.RED + profile.getVerticalLimit(),
             ChatColor.GOLD + "-> " + ChatColor.YELLOW + "Extra Horizontal: " + ChatColor.RED + profile.getExtraHorizontal(),
             ChatColor.GOLD + "-> " + ChatColor.YELLOW + "Extra Vertical: " + ChatColor.RED + profile.getExtraVertical(),
-            ChatColor.GOLD + "-> " + ChatColor.YELLOW + "Slowdown: " + ChatColor.RED + profile.getSlowdown(),
-            ChatColor.GOLD + "-> " + ChatColor.YELLOW + "Cancel Sprint: " + ChatColor.RED + profile.isCancelSprint()
+            ChatColor.GOLD + "-> " + ChatColor.YELLOW + "Slowdown: " + ChatColor.RED + profile.getSlowdown()
         );
     }
 
     @Override
     public boolean setAll(KnockbackProfile profile, String[] args) {
-        if (args.length == 10) {
+        if (args.length == 9) {
             profile.setFriction(Double.parseDouble(args[2]));
             profile.setHorizontal(Double.parseDouble(args[3]));
             profile.setVertical(Double.parseDouble(args[4]));
@@ -86,7 +82,6 @@ public class KnockbackProfileFactory implements ProfileFactory<KnockbackProfile>
             profile.setExtraHorizontal(Double.parseDouble(args[6]));
             profile.setExtraVertical(Double.parseDouble(args[7]));
             profile.setSlowdown(Double.parseDouble(args[8]));
-            profile.setCancelSprint(Boolean.parseBoolean(args[9]));
             return true;
         } else {
             return false;

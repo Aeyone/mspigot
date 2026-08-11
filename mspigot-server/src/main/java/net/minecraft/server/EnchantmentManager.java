@@ -135,9 +135,11 @@ public class EnchantmentManager {
         a((EnchantmentModifier) b, aitemstack);
         if (b.a > 25) {
             b.a = 25;
+        } else if (b.a < 0) {
+            b.a = 0;
         }
 
-        return b.a;
+        return (b.a + 1 >> 1) + random.nextInt((b.a >> 1) + 1);
     }
 
     public static float a(EntityLiving entityliving, EntityLiving entityliving1) {

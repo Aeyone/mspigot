@@ -10,8 +10,7 @@
             "verticalLimit": "0.4",
             "extraHorizontal": "0.425",
             "extraVertical": "0.085",
-            "slowdown": "0.6",
-            "cancelSprint": "true"
+            "slowdown": "0.6"
         }
     }
 }

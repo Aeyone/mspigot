@@ -12,7 +12,6 @@ public class CraftKnockbackProfile implements KnockbackProfile {
     private double extraHorizontal = 0.425D;
     private double extraVertical = 0.085D;
     private double slowdown = 0.6D;
-    private boolean cancelSprint = true;
 
     public CraftKnockbackProfile(String name) {
         this.name = name;
@@ -73,13 +72,5 @@ public class CraftKnockbackProfile implements KnockbackProfile {
     public double getSlowdown() { return slowdown; };
 
     public void setSlowdown(double slowdown) {this.slowdown = slowdown; }
-
-    public boolean isCancelSprint() {
-        return cancelSprint;
-    }
-
-    public void setCancelSprint(boolean cancelSprint) {
-        this.cancelSprint = cancelSprint;
-    }
 
 }

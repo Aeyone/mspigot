@@ -1359,6 +1359,10 @@ public class PlayerConnection implements PacketPlayInListener {
             this.player.setSneaking(false);
         } else if (packetplayinentityaction.d() == 4) {
             this.player.setSprinting(true);
+            if (this.player.isExtraSprintReleaseState()) {
+                this.player.setExtraSprintState(true);
+                this.player.setExtraSprintReleaseState(false);
+            }
             this.player.setSneaking(false); // MineHQ
 
             // Guardian start
@@ -1368,6 +1372,8 @@ public class PlayerConnection implements PacketPlayInListener {
             // Guardian end
         } else if (packetplayinentityaction.d() == 5) {
             this.player.setSprinting(false);
+            this.player.setExtraSprintState(false);
+            this.player.setExtraSprintReleaseState(true);
         } else if (packetplayinentityaction.d() == 3) {
             this.player.a(false, true, true);
             //this.checkMovement = false; // CraftBukkit - this is handled in teleport

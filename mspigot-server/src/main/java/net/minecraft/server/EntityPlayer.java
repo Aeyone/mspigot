@@ -73,6 +73,25 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     public boolean joining = true;
     public int lastPing = -1; // Spigot
     // CraftBukkit end
+    private boolean extraSprintReleaseState = true;
+    private boolean extraSprintState = false;
+
+    public boolean isExtraSprintReleaseState() {
+        return this.extraSprintReleaseState;
+    }
+
+    public void setExtraSprintReleaseState(boolean extraSprintReleaseState) {
+        this.extraSprintReleaseState = extraSprintReleaseState;
+    }
+
+    public boolean isExtraSprintState() {
+        return this.extraSprintState;
+    }
+
+    public void setExtraSprintState(boolean extraSprintState) {
+        this.extraSprintState = extraSprintState;
+    }
+
     // Spigot start
     public boolean collidesWithEntities = true;
 

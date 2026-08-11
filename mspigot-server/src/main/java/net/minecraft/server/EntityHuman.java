@@ -10,7 +10,10 @@ import net.minecraft.util.com.google.common.base.Charsets;
 import net.minecraft.util.com.mojang.authlib.GameProfile;
 
 // CraftBukkit start
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.bukkit.Bukkit;
+import org.bukkit.Server;
 import org.bukkit.craftbukkit.entity.CraftHumanEntity;
 import org.bukkit.craftbukkit.entity.CraftItem;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
@@ -27,6 +30,7 @@ import net.hylist.profile.KnockbackProfile;
 
 public abstract class EntityHuman extends EntityLiving implements ICommandListener {
 
+    private static final Logger log = LogManager.getLogger(EntityHuman.class);
     public PlayerInventory inventory = new PlayerInventory(this);
     private InventoryEnderChest enderChest = new InventoryEnderChest();
     public Container defaultContainer;
@@ -914,11 +918,15 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
         return (double) (this.height - 0.5F);
     }
 
+    public long lastDamageTick(EntityPlayer player) {
+        return MinecraftServer.currentTick - player.playerConnection.lastMotionTick;
+    }
+
     public void attack(Entity entity) {
         if (entity.av()) {
             if (!entity.j(this)) {
                 float f = (float) this.getAttributeInstance(GenericAttributes.e).getValue();
-                int i = 0;
+                float i = 0;
                 float f1 = 0.0F;
 
                 if (entity instanceof EntityLiving) {
@@ -926,9 +934,21 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
                     i += EnchantmentManager.getKnockbackEnchantmentLevel(this, (EntityLiving) entity);
                 }
 
-                if (this.isSprinting() || (this instanceof EntityPlayer && !this.onGround) || !entity.onGround) {
-                    ++i;
+                boolean inCombo = false;
+                if (entity instanceof EntityPlayer && this instanceof EntityPlayer) {
+                    inCombo = (lastDamageTick((EntityPlayer)entity) <= 25 && lastDamageTick((EntityPlayer)this) > 25);
+                    inCombo = (inCombo || ((EntityPlayer) this).isExtraSprintState());
                 }
+
+                if (inCombo) {
+                    i += 1.0F;
+                }
+
+                if (this instanceof EntityPlayer && !this.onGround && entity.onGround) {
+                    i += 0.25F;
+                }
+
+                i = Math.min(i, 1.0F);
 
                 if (f > 0.0F || f1 > 0.0F) {
                     boolean flag = !world.paperSpigotConfig.disablePlayerCrits && this.fallDistance > 0.0F && !this.onGround && !this.h_() && !this.M() && !this.hasEffect(MobEffectList.BLINDNESS) && this.vehicle == null && entity instanceof EntityLiving;
@@ -967,9 +987,9 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
                     if (flag2) {
                         if (i > 0) {
                             entity.g(
-                                    (double) (-MathHelper.sin(this.yaw * 3.1415927F / 180.0F) * (float) i * profile.getExtraHorizontal()),
+                                    (-MathHelper.sin(this.yaw * 3.1415927F / 180.0F) * i * profile.getExtraHorizontal()),
                                     profile.getExtraVertical(),
-                                    (double) (MathHelper.cos(this.yaw * 3.1415927F / 180.0F) * (float) i * profile.getExtraHorizontal())
+                                    (MathHelper.cos(this.yaw * 3.1415927F / 180.0F) * i * profile.getExtraHorizontal())
                             );
                             if (entity.motY > profile.getVerticalLimit()) {
                                 entity.motY = profile.getVerticalLimit();
@@ -977,8 +997,8 @@ public abstract class EntityHuman extends EntityLiving implements ICommandListen
                         }
                         this.motX *= profile.getSlowdown();
                         this.motZ *= profile.getSlowdown();
-                        if (profile.isCancelSprint()) {
-                            this.setSprinting(false);
+                        if (this instanceof EntityPlayer && lastDamageTick((EntityPlayer)this) <= 20) {
+                            ((EntityPlayer) this).setExtraSprintState(false);
                         }
 
                         // send the combat velocity immediately, then keep the
