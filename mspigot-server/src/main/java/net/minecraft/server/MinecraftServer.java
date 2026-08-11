@@ -2,6 +2,8 @@ package net.minecraft.server;
 
 import java.awt.GraphicsEnvironment;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.net.Proxy;
 import java.security.KeyPair;
@@ -409,6 +411,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
     public void stop() throws ExceptionWorldConflict { // CraftBukkit - added throws
         if (!this.M) {
             getLogger().info("Stopping server");
+            this.transferPlayersToLobby();
             // CraftBukkit start
             if (this.server != null) {
                 this.server.disablePlugins();
@@ -450,6 +453,37 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
             //Spigot end
 
             this.threadingManager.shutdown(); // Poweruser
+        }
+    }
+
+    private void transferPlayersToLobby() {
+        if (!SpigotConfig.bungee || this.u == null || this.u.players.isEmpty()) {
+            return;
+        }
+
+        try {
+            ByteArrayOutputStream outputBytes = new ByteArrayOutputStream();
+            DataOutputStream output = new DataOutputStream(outputBytes);
+
+            output.writeUTF("Connect");
+            output.writeUTF("Lobby");
+
+            byte[] message = outputBytes.toByteArray();
+            List<EntityPlayer> players = new ArrayList<>((List<EntityPlayer>) this.u.players);
+
+            for (EntityPlayer player : players) {
+                player.playerConnection.sendPacket(new PacketPlayOutCustomPayload("BungeeCord", message));
+            }
+
+            getLogger().info("Sent " + players.size() + " player(s) to the BungeeCord Lobby server");
+
+            try {
+                Thread.sleep(1000L);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        } catch (IOException e) {
+            getLogger().error("Unable to send players to the BungeeCord Lobby server", e);
         }
     }
 
