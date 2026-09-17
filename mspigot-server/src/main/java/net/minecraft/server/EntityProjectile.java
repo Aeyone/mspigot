@@ -196,8 +196,14 @@ public abstract class EntityProjectile extends Entity implements IProjectile {
                         fz = entityliving.getPotion().getPotionSize();
                     }
 
-                    AxisAlignedBB axisalignedbb = entity1.boundingBox.grow((double) fx, (double) fy, (double) fz);
-                    MovingObjectPosition movingobjectposition1 = axisalignedbb.a(vec3d, vec3d1);
+                    MovingObjectPosition movingobjectposition1;
+                    if (this instanceof EntityEnderPearl && entity1 instanceof EntityPlayer) {
+                        Vec3D hit = PearlPlayerCollision.trace(this.boundingBox, entity1.boundingBox, vec3d, vec3d1);
+                        movingobjectposition1 = hit == null ? null : new MovingObjectPosition(entity1, hit);
+                    } else {
+                        AxisAlignedBB axisalignedbb = entity1.boundingBox.grow((double) fx, (double) fy, (double) fz);
+                        movingobjectposition1 = axisalignedbb.a(vec3d, vec3d1);
+                    }
 
                     // Smooth Potting
                     if (this instanceof EntityPotion && movingobjectposition1 == null && this.boundingBox.b(entity1.boundingBox)) {
@@ -207,7 +213,7 @@ public abstract class EntityProjectile extends Entity implements IProjectile {
                     if (movingobjectposition1 != null) {
                         double d1 = vec3d.distanceSquared(movingobjectposition1.pos); // CraftBukkit - distance efficiency
 
-                        if (d1 < d0 || d0 == 0.0D) {
+                        if (entity == null || d1 < d0) {
                             entity = entity1;
                             d0 = d1;
                         }
