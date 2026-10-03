@@ -27,8 +27,16 @@ public class ItemBucket extends Item {
     }
 
     public ItemStack a(ItemStack itemstack, World world, EntityHuman entityhuman) {
+        return this.a(itemstack, world, entityhuman, this.getMovingObjectPosition(world, entityhuman));
+    }
+
+    public MovingObjectPosition getMovingObjectPosition(World world, EntityHuman entityhuman) {
+        return this.a(world, entityhuman, this.a == Blocks.AIR);
+    }
+
+    // An explicit null target means no hit; never fall back to the player's old look.
+    public ItemStack a(ItemStack itemstack, World world, EntityHuman entityhuman, MovingObjectPosition movingobjectposition) {
         boolean flag = this.a == Blocks.AIR;
-        MovingObjectPosition movingobjectposition = this.a(world, entityhuman, flag);
 
         if (movingobjectposition == null) {
             return itemstack;

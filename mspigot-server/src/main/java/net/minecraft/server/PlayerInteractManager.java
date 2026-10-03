@@ -349,9 +349,19 @@ public class PlayerInteractManager {
     }
 
     public boolean useItem(EntityHuman entityhuman, World world, ItemStack itemstack) {
+        return this.useItem(entityhuman, world, itemstack, null, false);
+    }
+
+    public boolean useItem(EntityHuman entityhuman, World world, ItemStack itemstack, MovingObjectPosition itemUseTarget) {
+        return this.useItem(entityhuman, world, itemstack, itemUseTarget, true);
+    }
+
+    private boolean useItem(EntityHuman entityhuman, World world, ItemStack itemstack, MovingObjectPosition itemUseTarget, boolean explicitItemUseTarget) {
         int i = itemstack.count;
         int j = itemstack.getData();
-        ItemStack itemstack1 = itemstack.a(world, entityhuman);
+        ItemStack itemstack1 = explicitItemUseTarget && itemstack.getItem() instanceof ItemBucket
+                ? ((ItemBucket) itemstack.getItem()).a(itemstack, world, entityhuman, itemUseTarget)
+                : itemstack.a(world, entityhuman);
 
         // Spigot start - protocol patch
         if ( itemstack1 != null && itemstack1.getItem() == Items.WRITTEN_BOOK )
@@ -384,6 +394,14 @@ public class PlayerInteractManager {
     }
 
     public boolean interact(EntityHuman entityhuman, World world, ItemStack itemstack, int i, int j, int k, int l, float f, float f1, float f2) {
+        return this.interact(entityhuman, world, itemstack, i, j, k, l, f, f1, f2, null, false);
+    }
+
+    public boolean interact(EntityHuman entityhuman, World world, ItemStack itemstack, int i, int j, int k, int l, float f, float f1, float f2, MovingObjectPosition itemUseTarget) {
+        return this.interact(entityhuman, world, itemstack, i, j, k, l, f, f1, f2, itemUseTarget, true);
+    }
+
+    private boolean interact(EntityHuman entityhuman, World world, ItemStack itemstack, int i, int j, int k, int l, float f, float f1, float f2, MovingObjectPosition itemUseTarget, boolean explicitItemUseTarget) {
         /* CraftBukkit start - whole method
         if ((!entityhuman.isSneaking() || entityhuman.be() == null) && world.getType(i, j, k).interact(world, i, j, k, entityhuman, l, f, f1, f2)) {
             return true;
@@ -442,7 +460,7 @@ public class PlayerInteractManager {
 
             // If we have 'true' and no explicit deny *or* an explicit allow -- run the item part of the hook
             if (itemstack != null && ((!result && event.useItemInHand() != Event.Result.DENY && !(block == Blocks.FENCE || block == Blocks.NETHER_FENCE)) || event.useItemInHand() == Event.Result.ALLOW)) { // Poweruser - special case fences
-                this.useItem(entityhuman, world, itemstack);
+                this.useItem(entityhuman, world, itemstack, itemUseTarget, explicitItemUseTarget);
             }
         }
         return result;

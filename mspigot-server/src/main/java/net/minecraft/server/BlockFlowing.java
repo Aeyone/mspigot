@@ -24,6 +24,9 @@ public class BlockFlowing extends BlockFluids {
     }
 
     public void a(World world, int i, int j, int k, Random random) {
+        if (this.solidifyThinLava(world, i, j, k)) {
+            return;
+        }
         // CraftBukkit start
         org.bukkit.World bworld = world.getWorld();
         org.bukkit.Server server = world.getServer();
@@ -296,10 +299,40 @@ public class BlockFlowing extends BlockFluids {
     }
 
     public void onPlace(World world, int i, int j, int k) {
+        if (this.solidifyThinLava(world, i, j, k)) {
+            return;
+        }
         super.onPlace(world, i, j, k);
         if (world.getType(i, j, k) == this) {
             world.a(i, j, k, this, this.getFlowSpeed(world, i, j, k)); // PaperSpigot
         }
+    }
+
+    @Override
+    public void doPhysics(World world, int i, int j, int k, Block block) {
+        if (!this.solidifyThinLava(world, i, j, k)) {
+            super.doPhysics(world, i, j, k, block);
+        }
+    }
+
+    private boolean solidifyThinLava(World world, int x, int y, int z) {
+        if (this.material != Material.LAVA || world.getType(x, y, z) != this) {
+            return false;
+        }
+        int data = world.getData(x, y, z);
+        if (data < 5 || data > 7) {
+            return false;
+        }
+        if (world.getType(x - 1, y, z).getMaterial() != Material.WATER
+                && world.getType(x + 1, y, z).getMaterial() != Material.WATER
+                && world.getType(x, y, z - 1).getMaterial() != Material.WATER
+                && world.getType(x, y, z + 1).getMaterial() != Material.WATER
+                && world.getType(x, y + 1, z).getMaterial() != Material.WATER) {
+            return false;
+        }
+        world.setTypeUpdate(x, y, z, Blocks.COBBLESTONE);
+        this.fizz(world, x, y, z);
+        return true;
     }
 
     public boolean L() {

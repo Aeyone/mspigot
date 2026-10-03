@@ -164,6 +164,26 @@ public class PlayerConnection implements PacketPlayInListener {
     private int dropCount = 0;
     private static final int SURVIVAL_PLACE_DISTANCE_SQUARED = 6 * 6;
     private static final int CREATIVE_PLACE_DISTANCE_SQUARED = 7 * 7;
+    private static final double FLUID_REACH_SQUARED = 5.0D * 5.0D;
+    private PendingFluidUse pendingFluidUse;
+
+    private static final class PendingFluidUse {
+        final EntityPlayer player;
+        final int slot;
+        final Item item;
+        final World world;
+        final int dimension;
+        final int createdTick;
+
+        PendingFluidUse(EntityPlayer player) {
+            this.player = player;
+            this.slot = player.inventory.itemInHandIndex;
+            this.item = player.inventory.getItemInHand().getItem();
+            this.world = player.world;
+            this.dimension = player.dimension;
+            this.createdTick = MinecraftServer.currentTick;
+        }
+    }
 
     // Get position of last block hit for BlockDamageLevel.STOPPED
     private double lastPosX = Double.MAX_VALUE;
@@ -187,6 +207,9 @@ public class PlayerConnection implements PacketPlayInListener {
     // CraftBukkit end
 
     public void a() {
+        if (this.pendingFluidUse != null && this.pendingFluidUse.createdTick != MinecraftServer.currentTick) {
+            this.executePendingFluidUse(this.player.yaw, this.player.pitch);
+        }
         this.g = false;
         ++this.e;
         this.minecraftServer.methodProfiler.a("keepAlive");
@@ -279,6 +302,13 @@ public class PlayerConnection implements PacketPlayInListener {
         }
         // CraftBukkit end
         WorldServer worldserver = this.minecraftServer.getWorldServer(this.player.dimension);
+
+        if (this.pendingFluidUse != null) {
+            if (!packetplayinflying.hasLook || (Float.isFinite(packetplayinflying.g()) && Float.isFinite(packetplayinflying.h()))) {
+                this.executePendingFluidUse(packetplayinflying.hasLook ? packetplayinflying.g() : this.player.yaw,
+                        packetplayinflying.hasLook ? packetplayinflying.h() : this.player.pitch);
+            }
+        }
 
         this.g = true;
         if (!this.player.viewingCredits) {
@@ -814,6 +844,10 @@ public class PlayerConnection implements PacketPlayInListener {
         int l = packetplayinblockplace.getFace();
 
         this.player.v();
+        if (isFluidBucket(itemstack)) {
+            this.handleFluidUse(packetplayinblockplace, itemstack, throttled);
+            return;
+        }
         boolean isEnderPearl = false;
         if (packetplayinblockplace.getFace() == 255 || (isEnderPearl = (!isChest(i, j, k) && itemstack != null && itemstack.getItem() != null && CraftMagicNumbers.getMaterial(itemstack.getItem()) == org.bukkit.Material.ENDER_PEARL))) {
             if (itemstack == null) {
@@ -907,12 +941,215 @@ public class PlayerConnection implements PacketPlayInListener {
         }
     }
 
+    private static boolean isFluidBucket(ItemStack stack) {
+        return stack != null && (stack.getItem() == Items.BUCKET
+                || stack.getItem() == Items.WATER_BUCKET || stack.getItem() == Items.LAVA_BUCKET);
+    }
+
+    // Package-visible geometry helpers also support regression tests without a live server.
+    static MovingObjectPosition createFluidInteractionTarget(int x, int y, int z, int face, float hitX, float hitY, float hitZ) {
+        if (face < 0 || face > 5 || !Float.isFinite(hitX) || !Float.isFinite(hitY) || !Float.isFinite(hitZ)) {
+            return null;
+        }
+        double hx = Math.max(0.0D, Math.min(1.0D, hitX));
+        double hy = Math.max(0.0D, Math.min(1.0D, hitY));
+        double hz = Math.max(0.0D, Math.min(1.0D, hitZ));
+        switch (face) {
+            case 0: hy = 0.0D; break;
+            case 1: hy = 1.0D; break;
+            case 2: hz = 0.0D; break;
+            case 3: hz = 1.0D; break;
+            case 4: hx = 0.0D; break;
+            case 5: hx = 1.0D; break;
+            default: return null;
+        }
+        return new MovingObjectPosition(x, y, z, face, Vec3D.a(x + hx, y + hy, z + hz));
+    }
+
+    static Vec3D fluidRayEnd(Vec3D start, Vec3D target) {
+        double dx = target.a - start.a;
+        double dy = target.b - start.b;
+        double dz = target.c - start.c;
+        double lengthSquared = dx * dx + dy * dy + dz * dz;
+        if (!Double.isFinite(lengthSquared) || lengthSquared <= 1.0E-12D) {
+            return null;
+        }
+        double scale = lengthSquared > FLUID_REACH_SQUARED ? 5.0D / Math.sqrt(lengthSquared) : 1.0D;
+        return Vec3D.a(start.a + dx * scale, start.b + dy * scale, start.c + dz * scale);
+    }
+
+    private Vec3D fluidEyePosition() {
+        Location eye = this.getPlayer().getEyeLocation();
+        return Vec3D.a(eye.getX(), eye.getY(), eye.getZ());
+    }
+
+    private MovingObjectPosition findFluidSourceTarget(World world, MovingObjectPosition packetTarget) {
+        if (packetTarget == null) {
+            return null;
+        }
+        Vec3D start = this.fluidEyePosition();
+        Vec3D end = fluidRayEnd(start, packetTarget.pos);
+        if (end == null) {
+            return null;
+        }
+        MovingObjectPosition target = world.rayTrace(start, end, true, false, false);
+        if (target == null || target.type != EnumMovingObjectType.BLOCK) {
+            return null;
+        }
+        Material material = world.getType(target.b, target.c, target.d).getMaterial();
+        return (material == Material.WATER || material == Material.LAVA)
+                && world.getData(target.b, target.c, target.d) == 0 ? target : null;
+    }
+
+    private boolean isFluidTargetInReach(MovingObjectPosition target) {
+        if (target == null || target.type != EnumMovingObjectType.BLOCK || target.pos == null) {
+            return false;
+        }
+        double distance = this.fluidEyePosition().distanceSquared(target.pos);
+        return Double.isFinite(distance) && distance <= FLUID_REACH_SQUARED;
+    }
+
+    private void handleFluidUse(PacketPlayInBlockPlace packet, ItemStack stack, boolean throttled) {
+        this.cancelPendingFluidUse();
+        int slot = this.player.inventory.itemInHandIndex;
+        if (packet.getFace() == 255) {
+            if (throttled) {
+                this.syncFluidSlot(slot);
+            } else {
+                this.pendingFluidUse = new PendingFluidUse(this.player);
+            }
+            return;
+        }
+
+        World world = this.player.world;
+        int x = packet.c(), y = packet.d(), z = packet.e(), face = packet.getFace();
+        MovingObjectPosition packetTarget = createFluidInteractionTarget(x, y, z, face, packet.h(), packet.i(), packet.j());
+        MovingObjectPosition syncTarget = packetTarget;
+        try {
+            if (packetTarget == null) {
+                return;
+            }
+            Vec3D eye = this.fluidEyePosition();
+            double packetDistance = eye.distanceSquared(Vec3D.a(x, y, z));
+            if (!Double.isFinite(packetDistance) || packetDistance > SURVIVAL_PLACE_DISTANCE_SQUARED) {
+                return;
+            }
+            if (y >= this.minecraftServer.getMaxBuildHeight() - 1 && (face == 1 || y >= this.minecraftServer.getMaxBuildHeight())) {
+                ChatMessage message = new ChatMessage("build.tooHigh", new Object[] { this.minecraftServer.getMaxBuildHeight() });
+                message.getChatModifier().setColor(EnumChatFormat.RED);
+                this.sendPacket(new PacketPlayOutChat(message));
+                return;
+            }
+
+            MovingObjectPosition fluidTarget = stack.getItem() == Items.BUCKET
+                    ? this.findFluidSourceTarget(world, packetTarget) : packetTarget;
+            if (fluidTarget != null) {
+                syncTarget = fluidTarget;
+                if (!this.isFluidTargetInReach(fluidTarget)) {
+                    return;
+                }
+            }
+            if (!throttled) {
+                // Explicit null is intentional: never re-raytrace using a stale yaw/pitch.
+                this.player.playerInteractManager.interact(this.player, world, stack, x, y, z, face,
+                        (float) (packetTarget.pos.a - x), (float) (packetTarget.pos.b - y), (float) (packetTarget.pos.c - z), fluidTarget);
+            }
+        } finally {
+            // Always correct the bucket slot, including rejected/cancelled interactions.
+            if (world == this.player.world) {
+                this.syncFluidBlocks(world, syncTarget);
+            }
+            this.syncFluidSlot(slot);
+        }
+    }
+
+    private void cancelPendingFluidUse() {
+        PendingFluidUse pending = this.pendingFluidUse;
+        this.pendingFluidUse = null;
+        if (pending != null) {
+            this.syncFluidSlot(pending.slot);
+        }
+    }
+
+    private void executePendingFluidUse(float yaw, float pitch) {
+        PendingFluidUse pending = this.pendingFluidUse;
+        this.pendingFluidUse = null; // Consume before calling plugins; execute at most once.
+        if (pending == null) {
+            return;
+        }
+        ItemStack stack = this.player.inventory.getItemInHand();
+        if (this.processedDisconnect) {
+            return;
+        }
+        if (this.player != pending.player || this.player.dead || this.player.world != pending.world
+                || this.player.dimension != pending.dimension || this.player.inventory.itemInHandIndex != pending.slot
+                || !isFluidBucket(stack) || stack.getItem() != pending.item || !Float.isFinite(yaw) || !Float.isFinite(pitch)) {
+            this.syncFluidSlot(pending.slot);
+            return;
+        }
+        float previousYaw = this.player.yaw;
+        float previousPitch = this.player.pitch;
+        MovingObjectPosition target = null;
+        try {
+            this.player.yaw = MathHelper.g(yaw);
+            this.player.pitch = Math.max(-90.0F, Math.min(90.0F, pitch));
+            target = ((ItemBucket) stack.getItem()).getMovingObjectPosition(pending.world, this.player);
+            PlayerInteractEvent event = CraftEventFactory.callPlayerInteractEvent(this.player, Action.RIGHT_CLICK_AIR, stack);
+            if (event.useItemInHand() != Event.Result.DENY && this.isFluidTargetInReach(target)
+                    && !this.player.dead && this.player.world == pending.world && this.player.dimension == pending.dimension
+                    && this.player.inventory.itemInHandIndex == pending.slot && this.player.inventory.getItemInHand() == stack) {
+                this.player.playerInteractManager.useItem(this.player, pending.world, stack, target);
+            }
+        } finally {
+            pending.player.yaw = previousYaw;
+            pending.player.pitch = previousPitch;
+            if (pending.world == this.player.world) {
+                this.syncFluidBlocks(pending.world, target);
+            }
+            this.syncFluidSlot(pending.slot);
+        }
+    }
+
+    private void syncFluidBlocks(World world, MovingObjectPosition target) {
+        if (target == null || target.type != EnumMovingObjectType.BLOCK) {
+            return;
+        }
+        int x = target.b, y = target.c, z = target.d;
+        this.sendPacket(new PacketPlayOutBlockChange(x, y, z, world));
+        switch (target.face) {
+            case 0: --y; break;
+            case 1: ++y; break;
+            case 2: --z; break;
+            case 3: ++z; break;
+            case 4: --x; break;
+            case 5: ++x; break;
+            default: return;
+        }
+        this.sendPacket(new PacketPlayOutBlockChange(x, y, z, world));
+    }
+
+    private void syncFluidSlot(int inventorySlot) {
+        ItemStack stack = this.player.inventory.items[inventorySlot];
+        if (stack != null && stack.count <= 0) {
+            this.player.inventory.items[inventorySlot] = null;
+        }
+        Slot slot = this.player.activeContainer.getSlot((IInventory) this.player.inventory, inventorySlot);
+        if (slot != null) {
+            this.sendPacket(new PacketPlayOutSetSlot(this.player.activeContainer.windowId, slot.rawSlotIndex,
+                    this.player.inventory.items[inventorySlot]));
+        } else {
+            // Some plugin containers do not expose the hotbar; window 0 is the player inventory.
+            this.sendPacket(new PacketPlayOutSetSlot(0, 36 + inventorySlot, this.player.inventory.items[inventorySlot]));
+        }
+    }
+
     private boolean isChest(int x, int y, int z) {
         org.bukkit.Material bukkitMaterial = CraftMagicNumbers.getMaterial(this.player.world.getType(x, y, z));
         return bukkitMaterial == org.bukkit.Material.CHEST || bukkitMaterial == org.bukkit.Material.TRAPPED_CHEST || bukkitMaterial == org.bukkit.Material.ENDER_CHEST;
     }
 
     public void a(IChatBaseComponent ichatbasecomponent) {
+        this.pendingFluidUse = null;
         // CraftBukkit start - Rarely it would send a disconnect line twice
         if (this.processedDisconnect) {
             return;
@@ -1049,6 +1286,9 @@ public class PlayerConnection implements PacketPlayInListener {
     // Guardian end
 
     public void a(PacketPlayInHeldItemSlot packetplayinhelditemslot) {
+        if (packetplayinhelditemslot.c() != this.player.inventory.itemInHandIndex) {
+            this.cancelPendingFluidUse();
+        }
         // CraftBukkit start
         if (this.player.dead) return;
 
